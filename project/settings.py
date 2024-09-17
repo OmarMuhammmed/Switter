@@ -27,7 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # My apps
     'home', 
-
+    'accounts',
     # libs 
     'allauth',
     'allauth.account',
@@ -132,6 +132,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # django alluth config
+
+
 AUTHENTICATION_BACKENDS = [
     
     # Needed to login by username in Django admin, regardless of `allauth`
@@ -145,5 +147,7 @@ AUTHENTICATION_BACKENDS = [
 ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login'  #
 ACCOUNT_LOGIN_REDIRECT_URL = 'home'
 
-
+ACCOUNT_FORMS = {
+    'signup': 'accounts.forms.CustomSignupForm', 
+}
 

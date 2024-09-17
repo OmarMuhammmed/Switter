@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+<title>Switter | Home</title>
+
 {% block content %}
 <div class="container mt-4">
   <div class="row">
@@ -25,7 +27,8 @@
         </div>
       </div>
       <form method="post" action="{% url 'account_logout' %}">
-        {% csrf_token %} {{ redirect_field }}
+        {% csrf_token %} 
+        {{ redirect_field }}
         <button type="submit" class="btn btn-outline-danger w-60 mb-3">
           Logout
         </button>
@@ -180,7 +183,7 @@
               style="width: 40px; height: 40px; border: 2px solid #38444d" />
             <div>
               <h6 class="mb-0">Tech Innovator</h6>
-              <small class="text-muted">@techinnovator</small>
+              <small>@techinnovator</small>
             </div>
             <button class="btn btn-outline-primary btn-sm ms-auto">
               Follow
@@ -194,26 +197,13 @@
               style="width: 40px; height: 40px; border: 2px solid #38444d" />
             <div>
               <h6 class="mb-0">AI Researcher</h6>
-              <small class="text-muted">@airesearcher</small>
+              <small >@airesearcher</small>
             </div>
             <button class="btn btn-outline-primary btn-sm ms-auto">
               Follow
             </button>
           </div>
-          <div class="d-flex align-items-center">
-            <img
-              src="https://via.placeholder.com/40"
-              class="rounded-circle me-2"
-              alt="User Avatar"
-              style="width: 40px; height: 40px; border: 2px solid #38444d" />
-            <div>
-              <h6 class="mb-0">Data Scientist</h6>
-              <small class="text-muted">@datascientist</small>
-            </div>
-            <button class="btn btn-outline-primary btn-sm ms-auto">
-              Follow
-            </button>
-          </div>
+         
         </div>
       </div>
     </div>
