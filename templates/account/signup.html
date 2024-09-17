@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load i18n %} 
+{% load static %}
+{% load allauth account %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-6 col-lg-4">
+            <div class="text-center mb-4">
+                <h1 class="display-4">🐦 Switter</h1>
+            </div>
+            <div class="card" style="background-color: #192734; border-color: #38444d;">
+                <div class="card-body" >
+                    <h2 class="card-title text-center mb-4 ">{% trans "Sign Up" %}</h2>
+                    
+                    <form  method="post" action="{% url 'account_signup' %}">
+                        {% csrf_token %}
+                        {% bootstrap_form form  %}
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" style="background-color: #253341; border-color: #38444d;">
+                            <label class="form-check-label" for="terms">I agree to the terms and conditions</label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mb-3">{% trans "Sign Up" %}</button>
+                    </form>
+                    
+                    <hr style="border-color: #38444d;">
+                    <div class="text-center">
+                        <p>{% trans "Or sign up with:" %}</p>
+                        {% include "socialaccount/snippets/login.html" %}
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 text-center">
+                <p>{% trans "Already have an account?" %} <a href="{% url 'account_login' %}" class="text-info">{% trans "Log in" %}</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

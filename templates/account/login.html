@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+{% load django_bootstrap5 %}
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+      <div class="col-md-6 col-lg-4">
+        <div class="text-center mb-4">
+          <h1 class="display-4">🐦 Switter</h1>
+        </div>
+        <div class="card" style="background-color: #192734; border-color: #38444d">
+          <div class="card-body">
+            <h2 class="card-title text-center mb-4">Log in </h2>
+            <form method="post" action="{% url 'account_login' %}">
+              {% csrf_token %}
+              {% bootstrap_form form %}
+              {{ redirect_field }}
+              <button type="submit" class="btn btn-primary w-100 mb-3">Log in</button>
+             
+            </form>
+            <hr style="border-color: #38444d" />
+            {% if SOCIALACCOUNT_ENABLED %}
+            <div class="text-center">
+              <p>Or log in with:</p>
+              {% include "socialaccount/snippets/login.html" %}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        <div class="mt-4 text-center">
+          <p>
+            Don't have an account?
+            <a href="{% url 'account_signup' %}" class="text-info">Sign up for Switter</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

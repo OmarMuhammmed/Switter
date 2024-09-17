@@ -13,7 +13,7 @@
 </head>
 <title>Switter | Home</title>
 <body style="background-color: #15202b; color: #ffffff">
-    {% if request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'signup' %}
+    {% if request.user.is_authenticated %}
         {% include "navbar.html" %}
     {% endif %}
     

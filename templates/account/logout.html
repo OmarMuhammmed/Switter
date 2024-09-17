@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-6 col-lg-4">
+            <div class="text-center mb-4">
+                <h1 class="display-4">🐦 Switter</h1>
+            </div>
+            <div class="card" style="background-color: #192734; border-color: #38444d;">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">Sign Out</h2>
+                    <p class="text-center">Are you sure you want to sign out?</p>
+                    <form method="post" action="{% url 'account_logout' %}">
+                        {% csrf_token %}
+                        {{ redirect_field }}
+                        <button type="submit" class="btn btn-primary w-100 mb-3">Sign Out</button>
+                    </form>
+                    <hr style="border-color: #38444d;">
+                    <div class="text-center">
+                        <p>Changed your mind?</p>
+                        <a href="/" class="btn btn-outline-light" style="background-color: #253341;">Cancel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
