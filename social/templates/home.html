@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 <title>Switter | Home</title>
-
 {% block content %}
 <div class="container mt-4">
   <div class="row">
@@ -16,8 +15,10 @@
               alt="User Avatar"
               style="width: 64px; height: 64px; border: 2px solid #38444d" />
             <div>
-              <h5 class="card-title mb-0">John Doe</h5>
-              <small>@johndoe</small>
+              <h5 class="card-title mb-0">
+                {{userinfo.first_name}} {{userinfo.last_name}}
+              </h5>
+              <small>@{{userinfo.username}}</small>
             </div>
           </div>
           <p>
@@ -27,8 +28,7 @@
         </div>
       </div>
       <form method="post" action="{% url 'account_logout' %}">
-        {% csrf_token %} 
-        {{ redirect_field }}
+        {% csrf_token %} {{ redirect_field }}
         <button type="submit" class="btn btn-outline-danger w-60 mb-3">
           Logout
         </button>
@@ -51,6 +51,8 @@
           <button class="btn btn-primary float-end">Post</button>
         </div>
       </div>
+      
+      {% for post in posts  %}
       <div
         class="card mb-3"
         style="background-color: #192734; border-color: #38444d">
@@ -61,17 +63,20 @@
               class="rounded-circle me-3"
               alt="User Avatar"
               style="width: 48px; height: 48px; border: 2px solid #38444d" />
-            <div>
-              <h6 class="mb-0">
-                Jane Smith <span class="text-muted">@janesmith · 2h</span>
-              </h6>
-              <p class="card-text">
-                Just finished reading an incredible book on AI ethics. It's
-                crucial that we consider the societal implications as we advance
-                in technology. What are your thoughts on responsible AI
-                development? 🤖📚 #AI #Ethics #TechForGood
-              </p>
-            </div>
+              <div>
+                <h6 class="mb-3 d-flex justify-content-between">
+                  <span>{{userinfo.first_name}} {{userinfo.last_name}} <small>@{{post.user}}</small></span>
+                  <small>{{post.created_at|time:"H:i"}} {{post.created_at|date}}</small>
+                </h6>
+                <p class="card-text">{{post.body}}</p>
+              
+                {% if post.image %}
+                <div>
+                  <img src="{{ post.image.url }}" class="img-fluid rounded mb-3" alt="Blog post image" />
+                </div>
+                {% endif %}
+              </div>
+              
           </div>
           <div class="d-flex justify-content-between">
             <button class="btn btn-outline-light btn-sm">
@@ -89,85 +94,7 @@
           </div>
         </div>
       </div>
-      <div
-        class="card mb-3"
-        style="background-color: #192734; border-color: #38444d">
-        <div class="card-body">
-          <div class="d-flex mb-3">
-            <img
-              src="https://via.placeholder.com/48"
-              class="rounded-circle me-3"
-              alt="User Avatar"
-              style="width: 48px; height: 48px; border: 2px solid #38444d" />
-            <div>
-              <h6 class="mb-0">
-                Alex Johnson <span class="text-muted">@alexj · 4h</span>
-              </h6>
-              <p class="card-text">
-                Excited to be speaking at the upcoming Tech Ethics Conference
-                next month! Will be discussing the challenges and opportunities
-                in creating ethical AI systems. Who else is attending?
-                #TechEthics #AIConference
-              </p>
-            </div>
-          </div>
-          <div class="d-flex justify-content-between">
-            <button class="btn btn-outline-light btn-sm">
-              <i class="far fa-heart"></i> 45
-            </button>
-            <button class="btn btn-outline-light btn-sm">
-              <i class="far fa-comment"></i> 18
-            </button>
-            <button class="btn btn-outline-light btn-sm">
-              <i class="fas fa-retweet"></i> 22
-            </button>
-            <button class="btn btn-outline-light btn-sm">
-              <i class="far fa-share-square"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-      <div
-        class="card mb-3"
-        style="background-color: #192734; border-color: #38444d">
-        <div class="card-body">
-          <div class="d-flex mb-3">
-            <img
-              src="https://via.placeholder.com/48"
-              class="rounded-circle me-3"
-              alt="User Avatar"
-              style="width: 48px; height: 48px; border: 2px solid #38444d" />
-            <div>
-              <h6 class="mb-0">
-                Emily Chen <span class="text-muted">@emilyc · 6h</span>
-              </h6>
-              <p class="card-text">
-                Just published a new blog post on the potential impacts of AI on
-                job markets and how we can prepare for the future. Check it out
-                and let me know your thoughts! 💼🔮 #FutureOfWork #AI
-              </p>
-            </div>
-          </div>
-          <img
-            src="https://via.placeholder.com/600x300"
-            class="img-fluid rounded mb-3"
-            alt="Blog post image" />
-          <div class="d-flex justify-content-between">
-            <button class="btn btn-outline-light btn-sm">
-              <i class="far fa-heart"></i> 67
-            </button>
-            <button class="btn btn-outline-light btn-sm">
-              <i class="far fa-comment"></i> 31
-            </button>
-            <button class="btn btn-outline-light btn-sm">
-              <i class="fas fa-retweet"></i> 15
-            </button>
-            <button class="btn btn-outline-light btn-sm">
-              <i class="far fa-share-square"></i>
-            </button>
-          </div>
-        </div>
-      </div>
+      {% endfor %}
     </div>
     <div class="col-md-3">
       <div
@@ -197,13 +124,12 @@
               style="width: 40px; height: 40px; border: 2px solid #38444d" />
             <div>
               <h6 class="mb-0">AI Researcher</h6>
-              <small >@airesearcher</small>
+              <small>@airesearcher</small>
             </div>
             <button class="btn btn-outline-primary btn-sm ms-auto">
               Follow
             </button>
           </div>
-         
         </div>
       </div>
     </div>

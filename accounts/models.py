@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager,AbstractBaseUser
 # Create your models here.
-
+from django.utils import timezone
 class CustomUserManager(BaseUserManager):
     def create_user(self, first_name, last_name , username, email=None,  password=None,**extra_fields):
         # Vaildation 
@@ -21,7 +21,12 @@ class CustomUserManager(BaseUserManager):
 
     
     def create_superuser(self,username, email=None, password=None, **extra_fields):
-        
+        # Set default permissions for superuser
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('is_admin', True)
+
         # Create the user with the provided parameters
         user = self.create_user(
             first_name='Admin',
@@ -31,10 +36,8 @@ class CustomUserManager(BaseUserManager):
             password=password,
             **extra_fields
         )
-        # Set default permissions for superuser
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active', True)
+        
+        
         
         # Set the password and save the user
         user.set_password(password)
@@ -47,10 +50,12 @@ class CustomUser(AbstractBaseUser):
     last_name = models.CharField(max_length=30)
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=50, unique=True)
-    date_joined = models.DateTimeField(auto_now_add=True)
+    date_joined = models.DateTimeField(default=timezone.now)
     last_login = models.DateTimeField(auto_now_add=True)
-    is_staff = models.BooleanField(default=False)
-    is_admin = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False , null=True,blank=True)
+    is_admin = models.BooleanField(default=False, null=True, blank=True)
+    is_superuser = models.BooleanField(default=False, null=True, blank=True)
+    is_active = models.BooleanField(default=True, null=True, blank=True)
     
     USERNAME_FIELD = 'username' # to login django dash 
 
@@ -58,6 +63,20 @@ class CustomUser(AbstractBaseUser):
     
     class Meta:
         verbose_name_plural = 'Users'
+
+    
+    def has_perm(self, perm, obj=None):
+       
+        return True
+
+    def has_module_perms(self, app_label):
+       
+        return True
+
+    @property
+    def is_staff(self):
+        
+        return self.is_superuser
     
 
     def __str__(self):

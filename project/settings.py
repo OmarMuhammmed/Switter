@@ -26,7 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # My apps
-    'home', 
+    'social', 
     'accounts',
     # libs 
     'allauth',
@@ -133,6 +133,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # django alluth config
 
+AUTH_USER_MODEL = 'accounts.CustomUser'
 
 AUTHENTICATION_BACKENDS = [
     
@@ -150,4 +151,5 @@ ACCOUNT_LOGIN_REDIRECT_URL = 'home'
 ACCOUNT_FORMS = {
     'signup': 'accounts.forms.CustomSignupForm', 
 }
-
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = "none"
