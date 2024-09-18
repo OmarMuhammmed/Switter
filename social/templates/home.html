@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 <title>Switter | Home</title>
 {% block content %}
+{% load django_bootstrap5 %}
 <div class="container mt-4">
   <div class="row">
     <div class="col-md-3">
@@ -28,7 +29,8 @@
         </div>
       </div>
       <form method="post" action="{% url 'account_logout' %}">
-        {% csrf_token %} {{ redirect_field }}
+        {% csrf_token %} 
+        {{ redirect_field }}
         <button type="submit" class="btn btn-outline-danger w-60 mb-3">
           Logout
         </button>
@@ -39,44 +41,37 @@
         class="card mb-3"
         style="background-color: #192734; border-color: #38444d">
         <div class="card-body">
-          <textarea
-            class="form-control mb-3"
-            rows="3"
-            placeholder="What's happening?"
-            style="
-              background-color: #253341;
-              border-color: #38444d;
-              color: #ffffff;
-            "></textarea>
-          <button class="btn btn-primary float-end">Post</button>
+         <form method="post">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            <button  type='submit 'class="btn btn-primary float-end">Post</button>
+         </form>
         </div>
       </div>
       
-      {% for post in posts  %}
-      <div
-        class="card mb-3"
-        style="background-color: #192734; border-color: #38444d">
+      {% for post in posts %}
+      <div class="card mb-3" style="background-color: #192734; border-color: #38444d; border-radius: 0.5rem;">
         <div class="card-body">
-          <div class="d-flex mb-3">
+          <div class="d-flex mb-3 align-items-start">
             <img
               src="https://via.placeholder.com/48"
               class="rounded-circle me-3"
               alt="User Avatar"
-              style="width: 48px; height: 48px; border: 2px solid #38444d" />
-              <div>
-                <h6 class="mb-3 d-flex justify-content-between">
-                  <span>{{userinfo.first_name}} {{userinfo.last_name}} <small>@{{post.user}}</small></span>
-                  <small>{{post.created_at|time:"H:i"}} {{post.created_at|date}}</small>
-                </h6>
-                <p class="card-text">{{post.body}}</p>
-              
-                {% if post.image %}
-                <div>
-                  <img src="{{ post.image.url }}" class="img-fluid rounded mb-3" alt="Blog post image" />
-                </div>
-                {% endif %}
+              style="width: 48px; height: 48px; border: 2px solid #38444d; border-radius: 50%;"
+            />
+            <div style="flex-grow: 1;">
+              <h6 class="mb-3 d-flex justify-content-between">
+                <span>{{ post.user.first_name }} {{ post.user.last_name }} <small>@{{ post.user }}</small></span>
+                <small>{{ post.created_at|time:"H:i" }} {{ post.created_at|date }}</small>
+              </h6>
+              <p class="card-text">{{ post.body }}</p>
+    
+              {% if post.image %}
+              <div style="max-width: 100%; height: auto;">
+                <img src="{{ post.image.url }}" class="img-fluid rounded mb-3" alt="Blog post image" style="max-width: 100%; height: auto; border-radius: 0.5rem;" />
               </div>
-              
+              {% endif %}
+            </div>
           </div>
           <div class="d-flex justify-content-between">
             <button class="btn btn-outline-light btn-sm">
@@ -94,8 +89,10 @@
           </div>
         </div>
       </div>
-      {% endfor %}
+    {% endfor %}
+    
     </div>
+    {% comment %} suggtion system  {% endcomment %}
     <div class="col-md-3">
       <div
         class="card mb-3"
