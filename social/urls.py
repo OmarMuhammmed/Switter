@@ -3,8 +3,9 @@ from .import views
 
 urlpatterns = [
 
-    path('home',views.home , name='home'),
+   
+    path('',views.PostsView.as_view(), name='posts'),
+    path('post/<int:pk>/',views.PostDetailView.as_view(), name='post_detail'),
     path('accounts/profile/',views.profile, name='profile'),
-    path('',views.PostListView.as_view(), name='posts'),
 
 ]

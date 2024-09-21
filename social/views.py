@@ -7,13 +7,9 @@ from django.contrib.auth.decorators import login_required
 from .forms import PostForm
 from django.shortcuts import redirect
 from django.contrib import messages
-
-@login_required
-def home(request):
-    return render(request, 'home.html',{})
-
-
-class PostListView(LoginRequiredMixin, View):
+from django.http import Http404
+from django.shortcuts import get_object_or_404
+class PostsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
 
         userinfo = User.objects.get(username=request.user)
@@ -44,9 +40,16 @@ class PostListView(LoginRequiredMixin, View):
         return render(request, 'home.html',{"form":form})
 
 
+class PostDetailView(View):
+    def get(self, request, pk, *args, **kwargs):
+            
+            post = get_object_or_404(Post,pk=pk)
+            print(post)
+            return render(request, 'post_detail.html', {'post': post})
+
+
 def profile(request):
     
     userinfo = User.objects.get(username=request.user)
-    print(userinfo)
 
     return render(request, 'profile.html',{"userinfo":userinfo})

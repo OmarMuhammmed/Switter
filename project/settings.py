@@ -13,7 +13,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -34,8 +34,8 @@ INSTALLED_APPS = [
     'django_bootstrap5',
     'allauth.socialaccount',
     # providers 
-    'allauth.socialaccount.providers.google', 
-    'allauth.socialaccount.providers.twitter', 
+    'allauth.socialaccount.providers.github', 
+    
 ]
 
 MIDDLEWARE = [
@@ -62,6 +62,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.request',   
             ],
         },
     },
@@ -132,7 +133,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # django alluth config
-
+SITE_ID = 1
 AUTH_USER_MODEL = 'accounts.CustomUser'
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -146,7 +147,15 @@ ACCOUNT_FORMS = {
 ACCOUNT_EMAIL_REQUIRED = False
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_EMAIL_NOTIFICATIONS  = True
-
+SOCIALACCOUNT_PROVIDERS = {
+    'github': {
+        'APP': {
+            'client_id':'Ov23liQxRLOBkQtZ2SeQ',
+            'secret': 'db17fd7595643ec02de854133fe181627573b76a',
+            'key': ''
+        }
+    }
+}
 
 # Email Config 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
