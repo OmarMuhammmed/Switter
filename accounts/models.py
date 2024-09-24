@@ -1,7 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager,AbstractBaseUser
-# Create your models here.
 from django.utils import timezone
+from django.dispatch import receiver
+from django.db.models.signals import post_save 
+
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, first_name, last_name , username, email=None,  password=None,**extra_fields):
         # Vaildation 
@@ -81,3 +84,18 @@ class CustomUser(AbstractBaseUser):
 
     def __str__(self):
         return self.username
+    
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    # followers
+    # following 
+    image = models.ImageField(upload_to='media/profiles', height_field=None, width_field=None, max_length=None) 
+    bio = models.TextField(max_length=250)
+
+
+@receiver(post_save, sender=CustomUser)    
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)   
