@@ -71,13 +71,13 @@
             <div class="flex-grow-1 me-2">
                 {{ comment }}
             </div>
-            <button type="submit" class="btn btn-outline-success btn-sm mt-2">Add</button>
+            <button type="submit" class="btn btn-outline-primary btn-sm mt-2">Add</button>
             </div>
         </form>
   
 
           <!-- Error Handling -->
-          {% if comment_form.errors %}
+        {% if comment_form.errors %}
           <ul>
             {% for field in comment_form %}
             {% for error in field.errors %}
@@ -85,38 +85,45 @@
             {% endfor %}
             {% endfor %}
           </ul>
-          {% endif %}
+        {% endif %}
 
-          <!-- Comments Section -->
           
+        <!-- Comments Section -->
+        {% for comment in comments %}
+            <div class="card mb-2 mt-2" style="background-color: #192734; border-color: #38444d; border-radius: 0.5rem; padding: 0.5rem 1rem;">
+                <div class="card-body" style="padding: 0.5rem;">
+                    <div class="d-flex mb-2 align-items-start">
+                        <img src="https://via.placeholder.com/48" class="rounded-circle me-3" alt="User Avatar" style="width: 48px; height: 48px; border: 2px solid #38444d;" />
+                        <div style="flex-grow: 1;">
+                            <h6 class="mb-1 d-flex justify-content-between">
+                                <span>{{ comment.user.first_name }} {{ comment.user.last_name }} <small>@{{ comment.user }}</small></span>
+                                <small>{{ comment.created_at|time:"H:i" }} {{ comment.created_at|date }}</small>
+                            </h6>
+                            <p class="card-text mb-1" style="font-size: 0.875rem;">{{ comment.body }}</p>
+                            <div class="d-flex align-items-center">
+                                <button class="btn btn-outline-light btn-sm ms-2"><i class="far fa-heart"></i> 1</button>
+                                <button class="btn btn-sm btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#replyForm{{ comment.pk }}" aria-expanded="false" aria-controls="replyForm{{ comment.pk }}">Reply</button>
+                            </div>
+                        </div>
+                    </div>
 
-          {% for comment in comments %}
-          <div class="card mb-2 mt-2" style="background-color: #192734; border-color: #38444d; border-radius: 0.5rem; padding: 0.5rem 1rem;">
-            <div class="card-body" style="padding: 0.5rem;">
-              <div class="d-flex mb-2 align-items-start">
-                <img
-                  src="https://via.placeholder.com/48"
-                  class="rounded-circle me-3"
-                  alt="User Avatar"
-                  style="width: 48px; height: 48px; border: 2px solid #38444d;" />
-                <div style="flex-grow: 1;">
-                  <h6 class="mb-1 d-flex justify-content-between">
-                    <span>{{ comment.user.first_name }} {{ comment.user.last_name }} <small>@{{ comment.user }}</small> </span>
-                    <small>{{ comment.created_at|time:"H:i" }} {{ comment.created_at|date }} </small>
-                  </h6>
-                
-                  <div class="d-flex justify-content-between align-items-center">
-                    <p class="card-text mb-1" style="font-size: 0.875rem; flex-grow: 1;">{{ comment.body }}</p>
-                    <button class="btn btn-outline-light btn-sm ms-2">
-                        <i class="far fa-heart"></i> 1
-                    </button>
-                  </div>
+                    <!-- Reply Section -->
+                    <div class="collapse mt-2" id="replyForm{{ comment.pk }}">
+                        <form method="POST" action="{% url 'add_reply' post.pk %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="comment_id" value="{{ comment.pk }}">
+                            {{ reply_form.as_p|safe }}  
+                            <button type="submit" class="btn btn-outline-primary btn-sm">Submit</button>
+                        </form>
+                    </div>
                 </div>
-              </div>
             </div>
-          </div>
-          {% endfor %}
-          
+        {% endfor %}
+
+        
+    
+            
+  </div>
 
           
         </div>

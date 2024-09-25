@@ -4,21 +4,18 @@ from accounts.models import CustomUser as User
 from django.views import View
 from .models import Post, Comment
 from django.contrib.auth.decorators import login_required
-from .forms import PostForm, CommentForm
+from .forms import PostForm, CommentForm, ReplyCommentForm
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
 
 
-
-class PostsView(LoginRequiredMixin, View):
+class HomeView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
 
         userinfo = User.objects.get(username=request.user)
-        # posts = Post.objects.all().order_by('-created_at')
-        posts = Post.objects.annotate(count_comments=Count('comments')).order_by('-created_at')
-        # count_comments = Comment.objects.count()
+        posts = Post.objects.annotate(count_comments=Count('comment')).order_by('-created_at')
         form = PostForm()
 
         return render(request, 'home.html',{
@@ -38,38 +35,82 @@ class PostsView(LoginRequiredMixin, View):
             
         return render(request, 'home.html',{"form":form})
 
+@login_required
+def post_detail(request, pk, *args, **kwargs):
+    post = get_object_or_404(Post, pk=pk)
+    comments = Comment.objects.filter(post=post).order_by('-created_at')
+    count_comments = comments.count()
 
-class PostDetailView(View):
-    def get(self, request, pk, *args, **kwargs):
-        post = get_object_or_404(Post,pk=pk)
-        comment = CommentForm()
-        comments = Comment.objects.filter(post=post).order_by('-created_at')
-        count_comments = Comment.objects.filter(post=post).count()
-        return render(request, 'post_detail.html', {
-            'post': post,
-            'comment' : comment,
-            'comments' : comments ,
-            'count_comments' : count_comments
-            })
+    if request.method == "POST":
+        return add_comment(request, pk)  
 
-    def post(self, request, pk, *args, **kwargs):
-        post = get_object_or_404(Post,pk=pk)
-        comment_form = CommentForm(request.POST)
+    comment_form = CommentForm()
+    reply_form = ReplyCommentForm()
 
-        if comment_form.is_valid():
-            add_comment = comment_form.save(commit=False)
-            add_comment.user = request.user
-            add_comment.post = post
-            add_comment.save()
-            messages.success(request,'Your comment was added successfully.')
-            return redirect('post_detail',pk=pk)
-        
-        return render(request, 'post_detail.html', {
-            'post': post,
-            'comment' : add_comment ,
-            })
-     
+    return render(request, 'post_detail.html', {
+        'post': post,
+        'comment': comment_form,
+        'comments': comments,
+        'count_comments': count_comments,
+        'reply_form': reply_form,
+    })
+
+
+@login_required
+def add_comment(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    comment_form = CommentForm(request.POST)
+
+    if comment_form.is_valid():
+        add_comment = comment_form.save(commit=False)
+        add_comment.user = request.user
+        add_comment.post = post
+        add_comment.save()
+        messages.success(request, 'Your comment was added successfully.')
+        return redirect('post_detail', pk=pk)
+
+    comments = Comment.objects.filter(post=post).order_by('-created_at')
+    count_comments = comments.count()
+    reply_form = ReplyCommentForm()
     
+    return render(request, 'post_detail.html', {
+        'post': post,
+        'comment': comment_form,
+        'comments': comments,
+        'count_comments': count_comments,
+        'reply_form': reply_form,
+    })
+
+
+@login_required
+def add_reply(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    print(request.POST)
+    if request.method == "POST":
+        reply_form = ReplyCommentForm(request.POST)
+        if reply_form.is_valid():
+            parent_comment_id = request.POST.get('comment_id')
+            parent_comment = get_object_or_404(Comment, pk=parent_comment_id)
+            add_reply = reply_form.save(commit=False)
+            add_reply.user = request.user
+            add_reply.post = post 
+            add_reply.parent_comment = parent_comment  
+            add_reply.save()
+            messages.success(request, 'Your reply was added successfully.')
+            return redirect('post_detail', pk=pk)
+
+    comment_form = CommentForm()
+    comments = Comment.objects.filter(post=post).order_by('-created_at')
+    count_comments = comments.count()
+    reply_form = ReplyCommentForm()
+
+    return render(request, 'post_detail.html', {
+        'post': post,
+        'comment': comment_form,
+        'comments': comments,
+        'count_comments': count_comments,
+        'reply_form': reply_form,
+    })
 
 
 def profile(request):

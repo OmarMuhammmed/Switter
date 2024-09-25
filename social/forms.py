@@ -1,5 +1,5 @@
 from django import forms
-from .models import Post, Comment
+from .models import Post, Comment, ReplyComment
 
 
 class PostForm(forms.ModelForm):
@@ -16,6 +16,7 @@ class PostForm(forms.ModelForm):
                 'rows': 5, 
             }),
         }
+
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
@@ -25,9 +26,23 @@ class CommentForm(forms.ModelForm):
         }
         widgets = {
             'body': forms.TextInput(attrs={
-
                 'placeholder': 'Add Your comment .. ',  
                 'style': 'background-color: #192734; color: white; border: 1px solid #555; padding: 10px; width: 100%; box-sizing: border-box; margin-top:10px ;',  # Dark background and styles
                 'rows': 5, 
+            }),
+        }
+
+class ReplyCommentForm(forms.ModelForm):
+    class Meta:
+        model = ReplyComment
+        fields = ['body']
+        labels = {
+            'body': '',  
+        }
+        widgets = {
+            'body': forms.TextInput(attrs={
+                'placeholder': 'Add Your reply .. ',  
+                'style': 'background-color: #192734; color: white; border: 1px solid #555; padding: 10px; width: 100%; box-sizing: border-box; margin-top:10px ;',  # Dark background and styles
+                
             }),
         }

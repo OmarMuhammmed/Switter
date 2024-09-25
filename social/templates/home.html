@@ -68,7 +68,9 @@
             </a>
             <div class="d-flex justify-content-between">
               <button class="btn btn-outline-light btn-sm"><i class="far fa-heart"></i> 23</button>
-              <button class="btn btn-outline-light btn-sm"><i class="far fa-comment"></i> {{post.count_comments}}</button>
+              <a href="{% url 'post_detail' post.pk %}" class="btn btn-outline-light btn-sm">
+                <i class="far fa-comment"></i> {{post.count_comments}}
+              </a>
               <button class="btn btn-outline-light btn-sm"><i class="fas fa-retweet"></i> 8</button>
             </div>
           </div>
