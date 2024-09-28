@@ -9,7 +9,7 @@ from django.shortcuts import redirect
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
-
+from django.utils import timezone
 
 class HomeView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
@@ -45,7 +45,7 @@ def post_detail(request, pk, *args, **kwargs):
         return add_comment(request, pk)  
     
    
-
+    update_post_form = PostForm(instance=post)
     comment_form = CommentForm()
     reply_form = ReplyCommentForm()
 
@@ -55,18 +55,46 @@ def post_detail(request, pk, *args, **kwargs):
         'comments': comments,
         'count_comments': count_comments,
         'reply_form': reply_form,
+        'update_post_form':update_post_form
     })
 
+@login_required
 def post_delete(request, pk):
     post = get_object_or_404(Post, pk=pk)
-    print("#"*30)
+
     if request.method == 'POST':
-        print("*"*30)
         post.delete()
         messages.success(request, 'Your Post was Deleted successfully..')
         return redirect('home')
+    
     return render(request, 'post_detail.html',{'post':post})    
 
+@login_required
+def post_update(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    
+    if request.method == 'POST':
+        update_post_form = PostForm(request.POST, instance=post)
+        
+        
+        if update_post_form.is_valid():
+            print('$'*200)
+            update_post = update_post_form.save(commit=False)
+            update_post.user = request.user
+            created_at = timezone.now()
+            update_post.created_at = created_at
+            update_post.save()
+            messages.success(request, 'Your Post was Updated successfully..')
+            return redirect('post_detail', pk=pk)
+        else :
+            update_post_form = PostForm(instance=post)
+
+    return render(request, 'post_detail.html',{
+        'update_post_form':update_post_form,
+        'post': post,
+         })  
+ 
+@login_required
 def add_comment(request, pk):
         post = get_object_or_404(Post, pk=pk)
         comment_form = CommentForm(request.POST)
@@ -90,6 +118,7 @@ def add_comment(request, pk):
             'count_comments': count_comments,
             'reply_form': reply_form,
         })
+
 
 class CommentView(LoginRequiredMixin, View):
     def post(request, pk):
