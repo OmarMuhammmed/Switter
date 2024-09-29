@@ -26,6 +26,7 @@ class Comment(models.Model):
 class ReplyComment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    parent_reply = models.ForeignKey('self', null=True, blank=True, related_name='child_replies', on_delete=models.CASCADE)
     parent_comment = models.ForeignKey(Comment, related_name='replies' , on_delete=models.CASCADE)
     body = models.CharField(max_length=250)
     created_at = models.DateTimeField(default=timezone.now) 
@@ -35,3 +36,6 @@ class ReplyComment(models.Model):
     # reaction 
     class Meta:
         ordering = ['created_at']
+
+    def is_child(self):
+        return self.parent is not None    

@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from accounts.models import CustomUser as User
 from django.views import View
-from .models import Post, Comment
+from .models import Post, Comment, ReplyComment
 from django.contrib.auth.decorators import login_required
 from .forms import PostForm, CommentForm, ReplyCommentForm
 from django.shortcuts import redirect
@@ -160,23 +160,34 @@ class CommentView(LoginRequiredMixin, View):
 
 @login_required
 def add_reply(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    print(request.POST)
     if request.method == "POST":
+        print("POST data:", request.POST)  
+
+        post = get_object_or_404(Post, pk=pk)
         reply_form = ReplyCommentForm(request.POST)
+        parent_id = request.POST.get('parent_id')
+        parent_reply = None
+
+        if parent_id:
+            parent_reply = get_object_or_404(ReplyComment, pk=parent_id)
+
         if reply_form.is_valid():
             parent_comment_id = request.POST.get('comment_id')
+            print("Comment ID:", parent_comment_id)  
             parent_comment = get_object_or_404(Comment, pk=parent_comment_id)
+            
             add_reply = reply_form.save(commit=False)
             add_reply.user = request.user
-            add_reply.post = post 
-            add_reply.parent_comment = parent_comment  
+            add_reply.post = post
+            add_reply.parent_comment = parent_comment
+            add_reply.parent_reply = parent_reply
             add_reply.save()
+
             messages.success(request, 'Your reply was added successfully.')
             return redirect('post_detail', pk=pk)
 
     comment_form = CommentForm()
-    comments = Comment.objects.filter(post=post).order_by('-created_at')
+    comments = Comment.objects.filter(post=post).prefetch_related('replies').order_by('-created_at')
     count_comments = comments.count()
     reply_form = ReplyCommentForm()
 

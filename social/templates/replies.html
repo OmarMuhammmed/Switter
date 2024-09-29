@@ -1,0 +1,31 @@
+{% for reply in replies %}
+    <div class="d-flex align-items-start mb-2">
+        <img src="https://via.placeholder.com/32" class="rounded-circle me-2" alt="User Avatar" style="width: 32px; height: 32px; border: 2px solid #38444d;" />
+        <div>
+            <h6 class="mb-1">
+                <span>{{ reply.user.first_name }} {{ reply.user.last_name }} <small>@{{ reply.user }}</small></span>
+                <small>{{ reply.created_at|time:"H:i" }} {{ reply.created_at|date }}</small>
+            </h6>
+            <p class="mb-0">{{ reply.body }}</p>
+
+            <!-- Reply Button -->
+            <button class="btn btn-sm btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#replyForm{{ reply.pk }}" aria-expanded="false" aria-controls="replyForm{{ reply.pk }}">Reply</button>
+
+            <!-- Nested Reply Form -->
+            <div class="collapse mt-2" id="replyForm{{ reply.pk }}">
+                <form method="POST" action="{% url 'add_reply' post.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="comment_id" value="{{ reply.parent_comment.pk }}">
+                    <input type="hidden" name="parent_id" value="{{ reply.pk }}">
+                    {{ reply_form.as_p|safe }}  
+                    <button type="submit" class="btn btn-outline-primary btn-sm">Submit</button>
+                </form>
+            </div>
+
+            <!-- Recursive Replies -->
+            <div class="child-replies mt-2 ms-4">
+                {% include 'replies.html' with replies=reply.child_replies.all %}
+            </div> 
+        </div>
+    </div>
+{% endfor %}
