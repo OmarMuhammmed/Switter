@@ -140,7 +140,7 @@
               <i class="far fa-heart"></i> 23
             </button>
             <button class="btn btn-outline-light btn-sm">
-              <i class="far fa-comment"></i> {{ count_comments }}
+              <i class="far fa-comment"></i> {{ total_comments_replis }}
             </button>
             <button class="btn btn-outline-light btn-sm">
               <i class="fas fa-retweet"></i> 8
@@ -269,24 +269,8 @@
                         </button>
                     </div>
                 
-                    <!-- Edit Form (hidden by default) -->
-                    <div id="edit-comment-form-{{ comment.pk }}" style="display: none">
-                        <form method="POST" action="{% url 'update_comment' post.pk comment.pk %}">
-                        {% csrf_token %} 
-                        {{ update_comment_form.body }}
-                        <button
-                            type="submit"
-                            class="btn btn-outline-primary btn-sm mt-2">
-                            Save Changes
-                        </button>
-                        <button
-                            type="button"
-                            class="btn btn-outline-secondary btn-sm mt-2"
-                            onclick="toggleEditCommentForm({{ comment.pk }})">
-                            Cancel
-                        </button>
-                        </form>
-                    </div>
+                    
+                    
                     </div>
                 </div>
                 

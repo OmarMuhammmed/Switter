@@ -13,7 +13,6 @@ from django.utils import timezone
 
 class HomeView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-
         userinfo = User.objects.get(username=request.user)
         posts = Post.objects.annotate(count_comments=Count('comment')).order_by('-created_at')
         form = PostForm()
@@ -40,7 +39,8 @@ def post_detail(request, pk,*args, **kwargs):
     post = get_object_or_404(Post, pk=pk)
     comments = Comment.objects.filter(post=post).order_by('-created_at')
     count_comments = comments.count()
-     
+    replis = ReplyComment.objects.filter(post=post).count()
+    total_comments_replis = count_comments + replis
     update_post_form = PostForm(instance=post)
     comment_form = CommentForm()
     reply_form = ReplyCommentForm()
@@ -52,6 +52,7 @@ def post_detail(request, pk,*args, **kwargs):
         'count_comments': count_comments,
         'reply_form': reply_form,
         'update_post_form':update_post_form,
+        'total_comments_replis' : total_comments_replis,
         
     })
 
