@@ -36,26 +36,23 @@ class HomeView(LoginRequiredMixin, View):
         return render(request, 'home.html',{"form":form})
 
 @login_required
-def post_detail(request, pk, *args, **kwargs):
+def post_detail(request, pk,*args, **kwargs):
     post = get_object_or_404(Post, pk=pk)
     comments = Comment.objects.filter(post=post).order_by('-created_at')
     count_comments = comments.count()
-
-    if request.method == "POST":
-        return add_comment(request, pk)  
-    
-   
+     
     update_post_form = PostForm(instance=post)
     comment_form = CommentForm()
     reply_form = ReplyCommentForm()
-
+    
     return render(request, 'post_detail.html', {
         'post': post,
         'comment': comment_form,
         'comments': comments,
         'count_comments': count_comments,
         'reply_form': reply_form,
-        'update_post_form':update_post_form
+        'update_post_form':update_post_form,
+        
     })
 
 @login_required
@@ -96,7 +93,8 @@ def post_update(request, pk):
  
 @login_required
 def add_comment(request, pk):
-        post = get_object_or_404(Post, pk=pk)
+    post = get_object_or_404(Post, pk=pk)
+    if request.POST :
         comment_form = CommentForm(request.POST)
 
         if comment_form.is_valid():
@@ -106,57 +104,34 @@ def add_comment(request, pk):
             add_comment.save()
             messages.success(request, 'Your comment was added successfully.')
             return redirect('post_detail', pk=pk)
-
-        comments = Comment.objects.filter(post=post).order_by('-created_at')
-        count_comments = comments.count()
-        reply_form = ReplyCommentForm()
+    else:
+        comment_form = CommentForm()
         
-        return render(request, 'post_detail.html', {
-            'post': post,
-            'comment': comment_form,
-            'comments': comments,
-            'count_comments': count_comments,
-            'reply_form': reply_form,
-        })
-
-
-class CommentView(LoginRequiredMixin, View):
-    def post(request, pk):
-        post = get_object_or_404(Post, pk=pk)
-        comment_form = CommentForm(request.POST)
-
-        if comment_form.is_valid():
-            add_comment = comment_form.save(commit=False)
-            add_comment.user = request.user
-            add_comment.post = post
-            add_comment.save()
-            messages.success(request, 'Your comment was added successfully.')
-            return redirect('post_detail', pk=pk)
-
-        comments = Comment.objects.filter(post=post).order_by('-created_at')
-        count_comments = comments.count()
-        reply_form = ReplyCommentForm()
-        
-        return render(request, 'post_detail.html', {
-            'post': post,
-            'comment': comment_form,
-            'comments': comments,
-            'count_comments': count_comments,
-            'reply_form': reply_form,
-        })
+    comments = Comment.objects.filter(post=post).order_by('-created_at')
+    count_comments = comments.count()
+    reply_form = ReplyCommentForm()
     
-    # def put(request, pk):
-    #     post = get_object_or_404(Post, pk=pk)
-    #     comment_form = CommentForm(request.POST,instance=request.data)
-    #     if comment_form.is_valid():
-    #         comment_form.update()
-    #         messages.success(request, 'Your comment was added successfully.')
-    #         return redirect('post_detail', pk=pk)
+    return render(request, 'post_detail.html', {
+        'post': post,
+        'comment': comment_form,
+        'comments': comments,
+        'count_comments': count_comments,
+        'reply_form': reply_form,
+    })
 
-    #     comments = Comment.objects.filter(post=post).order_by('-created_at')
-    #     count_comments = comments.count()
-    #     reply_form = ReplyCommentForm()
+@login_required
+def delete_comment(request, pk, comment_id):
+    post = get_object_or_404(Post, pk=pk)
+    comment = get_object_or_404(Comment, id=comment_id, post=post)
 
+    print('DELETE '*30)
+    if request.user == comment.user:
+        comment.delete()
+        messages.success(request, 'Comment deleted successfully.')
+    else:
+        messages.error(request, 'You are not authorized to delete this comment.')
+
+    return redirect('post_detail', pk=pk)
 
 @login_required
 def add_reply(request, pk):
@@ -198,6 +173,7 @@ def add_reply(request, pk):
         'count_comments': count_comments,
         'reply_form': reply_form,
     })
+
 
 
 def profile(request):

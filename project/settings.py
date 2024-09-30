@@ -11,7 +11,7 @@ import allauth
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True 
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
@@ -150,8 +150,8 @@ ACCOUNT_EMAIL_NOTIFICATIONS  = True
 SOCIALACCOUNT_PROVIDERS = {
     'github': {
         'APP': {
-            'client_id':'Ov23liQxRLOBkQtZ2SeQ',
-            'secret': 'db17fd7595643ec02de854133fe181627573b76a',
+            'client_id':config('client_id'),
+            'secret': config('secret'),
             'key': ''
         }
     }
