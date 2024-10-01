@@ -37,7 +37,7 @@
         >
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="{% url 'profile' %}"
+        <a class="nav-link" href="{% url 'profile' slug=request.user.profile.slug  %}"
           ><i class="fas fa-user"></i
           ><span class="d-none d-sm-inline ms-2">Profile</span></a
         >

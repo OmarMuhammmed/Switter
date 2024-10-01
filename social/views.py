@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
-from accounts.models import CustomUser as User
+from accounts.models import CustomUser as User , Profile
 from django.views import View
 from .models import Post, Comment, ReplyComment
 from django.contrib.auth.decorators import login_required
 from .forms import PostForm, CommentForm, ReplyCommentForm
 from django.shortcuts import redirect
+from django.urls import reverse
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
@@ -176,9 +177,8 @@ def add_reply(request, pk):
     })
 
 
-
-def profile(request):
+def profile(request,slug):
     
-    userinfo = User.objects.get(username=request.user)
+    userinfo = get_object_or_404(Profile,slug=slug)
 
     return render(request, 'profile.html',{"userinfo":userinfo})

@@ -11,6 +11,6 @@ urlpatterns = [
     path('post/<int:pk>/comment/',views.add_comment, name='add_comment'),
     path('post/<int:pk>/comment/<int:comment_id>/delete/', views.delete_comment, name='delete_comment'),
     path('post/<int:pk>/reply/',views.add_reply, name='add_reply'),
-    path('accounts/profile/',views.profile, name='profile'),
+    path('accounts/profile/<slug:slug>/',views.profile, name='profile'),
 
 ]

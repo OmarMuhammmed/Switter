@@ -140,7 +140,7 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login'  #
-ACCOUNT_LOGIN_REDIRECT_URL = 'posts'
+ACCOUNT_ADAPTER = 'accounts.adapters.MyAccountAdapter'
 ACCOUNT_FORMS = {
     'signup': 'accounts.forms.CustomSignupForm', 
 }

@@ -3,7 +3,7 @@ from django.contrib.auth.models import BaseUserManager,AbstractBaseUser
 from django.utils import timezone
 from django.dispatch import receiver
 from django.db.models.signals import post_save 
-
+from django.utils.text import slugify
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, first_name, last_name , username, email=None,  password=None,**extra_fields):
@@ -91,11 +91,17 @@ class Profile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     # followers
     # following 
-    image = models.ImageField(upload_to='media/profiles', height_field=None, width_field=None, max_length=None) 
+    image = models.ImageField(upload_to='media/profiles', height_field=None, width_field=None, max_length=None ,blank=True, null=True) 
     bio = models.TextField(max_length=250)
+    slug = models.SlugField(unique=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.user.username)
+        super().save(*args, **kwargs)
 
 @receiver(post_save, sender=CustomUser)    
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        Profile.objects.create(user=instance)   
+        user_profile = Profile.objects.create(user=instance)   
+        user_profile.save()
