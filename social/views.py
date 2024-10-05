@@ -5,6 +5,7 @@ from django.views import View
 from .models import Post, Comment, ReplyComment
 from django.contrib.auth.decorators import login_required
 from .forms import PostForm, CommentForm, ReplyCommentForm
+from accounts.forms import BioForm, ImageForm
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.contrib import messages
@@ -14,7 +15,7 @@ from django.utils import timezone
 
 class HomeView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        userinfo = User.objects.get(username=request.user)
+        userinfo = Profile.objects.get(user=request.user)
         posts = Post.objects.annotate(count_comments=Count('comment')).order_by('-created_at')
         form = PostForm()
 
@@ -177,8 +178,25 @@ def add_reply(request, pk):
     })
 
 
-def profile(request,slug):
+def profile(request, slug):
     
-    userinfo = get_object_or_404(Profile,slug=slug)
+    userinfo = get_object_or_404(Profile, slug=slug)
+    
+    if request.method == 'POST':
+        img_form = ImageForm(request.POST, request.FILES,instance=userinfo )
+        bio_form = BioForm(request.POST, instance=userinfo)
+        if bio_form.is_valid() :
+            bio_form.save()
 
-    return render(request, 'profile.html',{"userinfo":userinfo})
+        if img_form.is_valid():
+            img_form.save()
+    else:
+        img_form = ImageForm(instance=userinfo)
+        bio_form = BioForm(instance=userinfo)
+
+
+    return render(request, 'profile.html', {
+        "userinfo": userinfo,
+        'form': bio_form,
+        'img_form':img_form, 
+    })

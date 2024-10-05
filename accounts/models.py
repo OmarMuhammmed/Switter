@@ -92,13 +92,16 @@ class Profile(models.Model):
     # followers
     # following 
     image = models.ImageField(upload_to='media/profiles', height_field=None, width_field=None, max_length=None ,blank=True, null=True) 
-    bio = models.TextField(max_length=250)
+    bio = models.TextField(max_length=300)
     slug = models.SlugField(unique=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.user.username)
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.user.username    
 
 @receiver(post_save, sender=CustomUser)    
 def create_user_profile(sender, instance, created, **kwargs):

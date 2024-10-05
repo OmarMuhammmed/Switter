@@ -4,11 +4,35 @@
 <div class="container mt-4">
   <div class="row align-items-center">
     <div class="col-md-3 d-flex flex-column align-items-center">
-      <img
-        src="https://via.placeholder.com/150"
-        class="rounded-circle"
-        alt="User Avatar"
-        style="width: 150px; height: 150px; border: 4px solid #15202b" />
+        
+        <div class="col-md-9">
+            {% if userinfo.image %}
+            <img
+                src="{{ userinfo.image.url }}"
+                id="user-avatar"
+                class="rounded-circle"
+                alt="User Avatar"
+                style="width: 150px; height: 150px; border: 4px solid #15202b; cursor: pointer; margin-left: 40px;" />
+            {% else %}
+            <img
+                src="https://via.placeholder.com/150"
+                id="user-avatar"
+                class="rounded-circle"
+                alt="User Avatar"
+                style="width: 150px; height: 150px; border: 4px solid #15202b; cursor: pointer;" />
+            {% endif %}
+            <form method="post" enctype="multipart/form-data" id="image-form">
+                {% csrf_token %}
+                <input type="file" id="image-input" name="image" style="display: none;" onchange="document.getElementById('image-form').submit();">
+            </form>
+        </div>
+        
+        <script>
+            document.getElementById('user-avatar').addEventListener('click', function() {
+                document.getElementById('image-input').click();
+            });
+        </script>
+        
       <form method="post" action="{% url 'account_logout' %}" style="margin-top: 15px;">
         {% csrf_token %} 
         {{ redirect_field }}
@@ -19,19 +43,53 @@
     </div>
 
     <div class="col-md-9">
-      <h2 class="mt-3">{{ userinfo.first_name }} {{ userinfo.last_name }}</h2>
-
-      <p>@{{ userinfo.username }}</p>
-
-      <p>
-        <span class="me-3"><strong>11</strong> Following</span>
-        <span><strong>29</strong> Followers</span>
-      </p>
-      <p>
-        Tech enthusiast, AI researcher, and avid reader. Exploring the
-        intersections of technology and ethics.
-      </p>
+       
+        <div id="bio-section">
+            <h2 class="mt-3">{{ userinfo.user.first_name }} {{ userinfo.user.last_name }}</h2>
+    
+            <p>@{{ userinfo.user.username }}</p>
+    
+            <p>
+                <span class="me-3"><strong>11</strong> Following</span>
+                <span><strong>29</strong> Followers</span>
+            </p>
+    
+            {% if userinfo.bio %}
+            <p id="bio-text">{{userinfo.bio}}</p>
+            {% endif %}
+            
+            
+            <button id="edit-bio-btn" class="btn btn-outline-primary btn-sm">Edit Bio</button>
+    
+            
+            <div class="card-body" id="bio-form" style="display: none;">
+                <form method="post">
+                    {% csrf_token %}
+                    {{form}}
+                    <br>
+                    <button type="submit" class="btn btn-outline-primary btn-sm">Change</button>
+                </form>
+            </div>
+        </div>
+    
+       
+        <script>
+            document.getElementById('edit-bio-btn').addEventListener('click', function() {
+           
+                var bioText = document.getElementById('bio-text');  
+                var bioForm = document.getElementById('bio-form');  
+    
+                if (bioForm.style.display === 'none') {
+                    bioForm.style.display = 'block';  
+                    bioText.style.display = 'none';  
+                } else {
+                    bioForm.style.display = 'none';  
+                    bioText.style.display = 'block';  
+                }
+            });
+        </script>
     </div>
+    
 
     <div class="container mt-4 d-flex justify-content-center">
       <div class="col-md-6">

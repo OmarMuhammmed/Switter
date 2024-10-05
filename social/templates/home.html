@@ -9,13 +9,13 @@
           <div class="card-body">
             <div class="d-flex align-items-center mb-3">
               <img
-                src="https://via.placeholder.com/64"
+                src="{{ userinfo.image.url }}"
                 class="rounded-circle me-3"
                 alt="User Avatar"
                 style="width: 64px; height: 64px; border: 2px solid #38444d" />
               <div>
-                <h5 class="card-title mb-0">{{userinfo.first_name}} {{userinfo.last_name}}</h5>
-                <small>@{{userinfo.username}}</small>
+                <h5 class="card-title mb-0">{{userinfo.user.first_name}} {{userinfo.user.last_name}}</h5>
+                <small>@{{userinfo.user.username}}</small>
               </div>
             </div>
             <p><span class="me-3"><strong>32</strong> Following</span> <span><strong>11</strong> Followers</span></p>
