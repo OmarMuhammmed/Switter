@@ -2,9 +2,9 @@
 <div class="container mt-4">
     <div class="alert-container">
         {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" style="background-color: #2377cc; color: white; border: 1px solid transparent; border-radius: .25rem;">
                 {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="filter: invert(1);"></button>
             </div>
         {% endfor %}
     </div>

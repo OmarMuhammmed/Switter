@@ -1,161 +1,166 @@
-{% extends "base.html" %} 
-{% block content %}
-
+{% extends "base.html" %} {% block content %} {% load django_bootstrap5 %}
 <div class="container mt-4">
   <div class="row align-items-center">
     <div class="col-md-3 d-flex flex-column align-items-center">
-        
-        <div class="col-md-9">
-            {% if userinfo.image %}
-            <img
-                src="{{ userinfo.image.url }}"
-                id="user-avatar"
-                class="rounded-circle"
-                alt="User Avatar"
-                style="width: 150px; height: 150px; border: 4px solid #15202b; cursor: pointer; margin-left: 40px;" />
-            {% else %}
-            <img
-                src="https://via.placeholder.com/150"
-                id="user-avatar"
-                class="rounded-circle"
-                alt="User Avatar"
-                style="width: 150px; height: 150px; border: 4px solid #15202b; cursor: pointer;" />
-            {% endif %}
-            <form method="post" enctype="multipart/form-data" id="image-form">
-                {% csrf_token %}
-                <input type="file" id="image-input" name="image" style="display: none;" onchange="document.getElementById('image-form').submit();">
-            </form>
-        </div>
-        
-        <script>
-            document.getElementById('user-avatar').addEventListener('click', function() {
-                document.getElementById('image-input').click();
-            });
-        </script>
-        
-      <form method="post" action="{% url 'account_logout' %}" style="margin-top: 15px;">
-        {% csrf_token %} 
-        {{ redirect_field }}
-        <button type="submit" class="btn btn-outline-danger">
+      <div class="col-md-9">
+        {% if userinfo.image %}
+        <img
+          src="{{ userinfo.image.url }}"
+          id="user-avatar"
+          class="rounded-circle"
+          alt="User Avatar"
+          style="
+            width: 150px;
+            height: 150px;
+            border: 4px solid #15202b;
+            cursor: pointer;
+            margin-left: 40px;
+          " />
+        {% else %}
+        <img
+          src="https://via.placeholder.com/150"
+          id="user-avatar"
+          class="rounded-circle"
+          alt="User Avatar"
+          style="
+            width: 150px;
+            height: 150px;
+            border: 4px solid #15202b;
+            cursor: pointer;
+          " />
+        {% endif %}
+        <form method="post" enctype="multipart/form-data" id="image-form">
+          {% csrf_token %}
+          <input
+            type="file"
+            id="image-input"
+            name="image"
+            style="display: none"
+            onchange="document.getElementById('image-form').submit();" />
+        </form>
+      </div>
+
+      <script>
+        document
+          .getElementById("user-avatar")
+          .addEventListener("click", function () {
+            document.getElementById("image-input").click();
+          });
+      </script>
+
+      <form
+        method="post"
+        action="{% url 'account_logout' %}"
+        style="margin-top: 15px">
+        {% csrf_token %} {{ redirect_field }}
+        <button type="submit" class="btn btn-outline-danger btn-sm">
           Logout
         </button>
       </form>
     </div>
 
     <div class="col-md-9">
-       
-        <div id="bio-section">
-            <h2 class="mt-3">{{ userinfo.user.first_name }} {{ userinfo.user.last_name }}</h2>
-    
-            <p>@{{ userinfo.user.username }}</p>
-    
-            <p>
-                <span class="me-3"><strong>11</strong> Following</span>
-                <span><strong>29</strong> Followers</span>
-            </p>
-    
-            {% if userinfo.bio %}
-            <p id="bio-text">{{userinfo.bio}}</p>
-            {% endif %}
-            
-            
-            <button id="edit-bio-btn" class="btn btn-outline-primary btn-sm">Edit Bio</button>
-    
-            
-            <div class="card-body" id="bio-form" style="display: none;">
-                <form method="post">
-                    {% csrf_token %}
-                    {{form}}
-                    <br>
-                    <button type="submit" class="btn btn-outline-primary btn-sm">Change</button>
-                </form>
-            </div>
+      <div id="bio-section">
+        <h2 class="mt-3">
+          {{ userinfo.user.first_name }} {{ userinfo.user.last_name }}
+        </h2>
+
+        <p>@{{ userinfo.user.username }}</p>
+
+        <p>
+          <span class="me-3"><strong>11</strong> Following</span>
+          <span><strong>29</strong> Followers</span>
+        </p>
+
+        {% if userinfo.bio %}
+        <p id="bio-text">{{userinfo.bio}}</p>
+        {% endif %}
+
+        <button id="edit-bio-btn" class="btn btn-outline-primary btn-sm">
+          Edit Bio
+        </button>
+
+        <div class="card-body" id="bio-form" style="display: none">
+          <form method="post">
+            {% csrf_token %} {{bio_form}}
+            <br />
+            <button type="submit" class="btn btn-outline-primary btn-sm">
+              Change
+            </button>
+          </form>
         </div>
-    
-       
-        <script>
-            document.getElementById('edit-bio-btn').addEventListener('click', function() {
-           
-                var bioText = document.getElementById('bio-text');  
-                var bioForm = document.getElementById('bio-form');  
-    
-                if (bioForm.style.display === 'none') {
-                    bioForm.style.display = 'block';  
-                    bioText.style.display = 'none';  
-                } else {
-                    bioForm.style.display = 'none';  
-                    bioText.style.display = 'block';  
-                }
-            });
-        </script>
+      </div>
+
+      <script>
+        document
+          .getElementById("edit-bio-btn")
+          .addEventListener("click", function () {
+            var bioText = document.getElementById("bio-text");
+            var bioForm = document.getElementById("bio-form");
+
+            if (bioForm.style.display === "none") {
+              bioForm.style.display = "block";
+              bioText.style.display = "none";
+            } else {
+              bioForm.style.display = "none";
+              bioText.style.display = "block";
+            }
+          });
+      </script>
     </div>
-    
+  </div>
 
-    <div class="container mt-4 d-flex justify-content-center">
-      <div class="col-md-6">
-        <div class="card mb-3" style="background-color: #192734; border-color: #38444d">
-          <div class="card-body">
-            <p class="card-text">
-              Just finished reading an incredible book on AI ethics...
-            </p>
-            <div class="d-flex justify-content-between">
-              <button class="btn btn-outline-light btn-sm">
-                <i class="far fa-heart"></i> 23
-              </button>
-              <button class="btn btn-outline-light btn-sm">
-                <i class="far fa-comment"></i> 12
-              </button>
-              <button class="btn btn-outline-light btn-sm">
-                <i class="fas fa-retweet"></i> 8
-              </button>
-            </div>
-          </div>
+  <div class="container mt-4 d-flex justify-content-center">
+    <div class="col-md-6">
+      <div
+        class="card mb-3"
+        style="background-color: #192734; border-color: #38444d">
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %} {% bootstrap_form post_form %}
+            <button type="submit" class="btn btn-primary float-end">
+              Post
+            </button>
+          </form>
         </div>
+      </div>
+    </div>
+  </div>
 
-        <div class="card mb-3" style="background-color: #192734; border-color: #38444d">
-          <div class="card-body">
-            <p class="card-text">
-              Excited to be speaking at the upcoming Tech Ethics Conference...
-            </p>
-            <div class="d-flex justify-content-between">
-              <button class="btn btn-outline-light btn-sm">
-                <i class="far fa-heart"></i> 45
-              </button>
-              <button class="btn btn-outline-light btn-sm">
-                <i class="far fa-comment"></i> 18
-              </button>
-              <button class="btn btn-outline-light btn-sm">
-                <i class="fas fa-retweet"></i> 22
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="card mb-3" style="background-color: #192734; border-color: #38444d">
-          <div class="card-body">
-            <p class="card-text">
-              Just published a new blog post on the potential impacts of AI...
-            </p>
+  {% for post in posts %}
+  <div class="container mt-1 d-flex justify-content-center">
+    <div class="col-md-6">
+      <div
+        class="card mb-3"
+        style="background-color: #192734; border-color: #38444d">
+        <div class="card-body">
+          <p class="card-text">{{post.body}}</p>
+          {% if post.image %}
+          <div style="max-width: 100%; height: auto">
             <img
-              src="https://via.placeholder.com/600x300"
+              src="{{ post.image.url }}"
               class="img-fluid rounded mb-3"
-              alt="Blog post image" />
-            <div class="d-flex justify-content-between">
-              <button class="btn btn-outline-light btn-sm">
-                <i class="far fa-heart"></i> 67
-              </button>
-              <button class="btn btn-outline-light btn-sm">
-                <i class="far fa-comment"></i> 31
-              </button>
-              <button class="btn btn-outline-light btn-sm">
-                <i class="fas fa-retweet"></i> 15
-              </button>
-            </div>
+              alt="Blog post image"
+              style="max-width: 100%; height: auto; border-radius: 0.5rem" />
+          </div>
+          {% endif %}
+          <p class="text-end">{{ post.created_at|date:"F j, Y, g:i a" }}</p>
+          <div class="d-flex justify-content-between">
+            <button class="btn btn-outline-light btn-sm">
+              <i class="far fa-heart"></i> 23
+            </button>
+            <button class="btn btn-outline-light btn-sm">
+              <i class="far fa-comment"></i> 12
+            </button>
+            <button class="btn btn-outline-light btn-sm">
+              <i class="fas fa-retweet"></i> 8
+            </button>
           </div>
         </div>
       </div>
     </div>
   </div>
+  {% endfor %}
 </div>
 
 {% endblock content %}

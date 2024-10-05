@@ -8,11 +8,20 @@
         <div class="card mb-3" style="background-color: #192734; border-color: #38444d;">
           <div class="card-body">
             <div class="d-flex align-items-center mb-3">
-              <img
+                
+                {% if userinfo.image %}
+                <img
                 src="{{ userinfo.image.url }}"
                 class="rounded-circle me-3"
                 alt="User Avatar"
                 style="width: 64px; height: 64px; border: 2px solid #38444d" />
+                {% else %}
+                <img
+                src="https://via.placeholder.com/48"
+                class="rounded-circle me-3"
+                alt="User Avatar"
+                style="width: 64px; height: 64px; border: 2px solid #38444d" />
+                {% endif %}
               <div>
                 <h5 class="card-title mb-0">{{userinfo.user.first_name}} {{userinfo.user.last_name}}</h5>
                 <small>@{{userinfo.user.username}}</small>
@@ -32,25 +41,48 @@
       <!-- Posts Section -->
       <div class="col-md-6">
         <div class="card mb-3" style="background-color: #192734; border-color: #38444d;">
-          <div class="card-body">
-            <form method="post">
-              {% csrf_token %}
-              {% bootstrap_form form %}
-              <button type="submit" class="btn btn-primary float-end">Post</button>
-            </form>
-          </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" >
+                    {% csrf_token %}
+                    {% bootstrap_form form %}
+                    <div class="image-upload-container" style="position: relative; display: inline-block;">
+                        <label for="{{ form.image.id_for_label }}" style="cursor: pointer;">
+                            <i class="fas fa-upload" style="font-size: 24px; color: white;"></i>
+                        </label>
+                        {{ form.image }}  
+                        <span id="file-name" style="color: white; margin-left: 10px;">No file chosen</span>
+                    </div>
+                    <button type="submit" class="btn btn-primary float-end ">Post</button>
+                </form>
+            </div>
         </div>
+        
+        <script>
+            document.getElementById('{{ form.image.id_for_label }}').addEventListener('change', function() {
+                var fileName = this.files[0] ? this.files[0].name : 'No file chosen';
+                document.getElementById('file-name').textContent = fileName;
+            });
+        </script>
+        
   
         {% for post in posts %}
         <div class="card mb-3" style="background-color: #192734; border-color: #38444d; border-radius: 0.5rem;">
           <div class="card-body">
             <a href="{% url 'post_detail' post.pk %}" style="text-decoration: none; color: inherit;">
               <div class="d-flex mb-3 align-items-start">
+                {% if userinfo.image %}
                 <img
-                  src="https://via.placeholder.com/48"
-                  class="rounded-circle me-3"
-                  alt="User Avatar"
-                  style="width: 48px; height: 48px; border: 2px solid #38444d; border-radius: 50%;" />
+                src="https://via.placeholder.com/48"
+                class="rounded-circle me-3"
+                alt="User Avatar"
+                style="width: 64px; height: 64px; border: 2px solid #38444d" />
+                {% else %}
+                <img
+                src="https://via.placeholder.com/48"
+                class="rounded-circle me-3"
+                alt="User Avatar"
+                style="width: 64px; height: 64px; border: 2px solid #38444d" />
+                {% endif %}
                 <div style="flex-grow: 1;">
                   <h6 class="mb-3 d-flex justify-content-between">
                     <span>{{ post.user.first_name }} {{ post.user.last_name }} <small>@{{ post.user }}</small></span>

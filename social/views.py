@@ -26,7 +26,9 @@ class HomeView(LoginRequiredMixin, View):
         })
     
     def post(self, request, *args, **kwargs):
-        form = PostForm(request.POST)
+        # add post 
+        form = PostForm(request.POST, request.FILES)
+        print(request.POST,request.FILES)
         if form.is_valid():
             new_post = form.save(commit=False)
             new_post.user = request.user 
@@ -46,7 +48,8 @@ def post_detail(request, pk,*args, **kwargs):
     update_post_form = PostForm(instance=post)
     comment_form = CommentForm()
     reply_form = ReplyCommentForm()
-    
+    userinfo = Profile.objects.get(user=request.user)
+
     return render(request, 'post_detail.html', {
         'post': post,
         'comment': comment_form,
@@ -55,18 +58,22 @@ def post_detail(request, pk,*args, **kwargs):
         'reply_form': reply_form,
         'update_post_form':update_post_form,
         'total_comments_replis' : total_comments_replis,
-        
+        'userinfo' : userinfo,
     })
 
 @login_required
 def post_delete(request, pk):
     post = get_object_or_404(Post, pk=pk)
-
-    if request.method == 'POST':
-        post.delete()
-        messages.success(request, 'Your Post was Deleted successfully..')
-        return redirect('home')
-    
+    if post.user == request.user :
+        if request.method == 'POST':
+            post.delete()
+            messages.success(request, 'Your Post was Deleted successfully..')
+            return redirect('home')
+    else :
+            messages.error(request, 'Your Denied to  Delete this Post ! ')
+            return redirect('post_detail', pk=pk)            
+        
+        
     return render(request, 'post_detail.html',{'post':post})    
 
 @login_required
@@ -76,18 +83,22 @@ def post_update(request, pk):
     if request.method == 'POST':
         update_post_form = PostForm(request.POST, instance=post)
         
-        
-        if update_post_form.is_valid():
-            print('$'*200)
-            update_post = update_post_form.save(commit=False)
-            update_post.user = request.user
-            created_at = timezone.now()
-            update_post.created_at = created_at
-            update_post.save()
-            messages.success(request, 'Your Post was Updated successfully..')
-            return redirect('post_detail', pk=pk)
+        if post.user == request.user :
+            if update_post_form.is_valid():
+                print('$'*200)
+                update_post = update_post_form.save(commit=False)
+                update_post.user = request.user
+                created_at = timezone.now()
+                update_post.created_at = created_at
+                update_post.save()
+                messages.success(request, 'Your Post was Updated successfully..')
+                return redirect('post_detail', pk=pk)
+            else :
+                update_post_form = PostForm(instance=post)
         else :
-            update_post_form = PostForm(instance=post)
+            messages.error(request, 'Your Denied to Edit  this Post ! ')
+            return redirect('post_detail', pk=pk)          
+            
 
     return render(request, 'post_detail.html',{
         'update_post_form':update_post_form,
@@ -177,14 +188,24 @@ def add_reply(request, pk):
         'reply_form': reply_form,
     })
 
-
+@login_required
 def profile(request, slug):
     
     userinfo = get_object_or_404(Profile, slug=slug)
     
+    posts = Post.objects.filter(user=userinfo.user)
+       
     if request.method == 'POST':
         img_form = ImageForm(request.POST, request.FILES,instance=userinfo )
         bio_form = BioForm(request.POST, instance=userinfo)
+        post_form = PostForm(request.POST)
+        if post_form.is_valid():
+            new_post = post_form.save(commit=False)
+            new_post.user = request.user 
+            new_post.save()
+            messages.success(request,'Your Added Post Successfully..')
+            return redirect('profile',slug=slug)
+        
         if bio_form.is_valid() :
             bio_form.save()
 
@@ -193,10 +214,13 @@ def profile(request, slug):
     else:
         img_form = ImageForm(instance=userinfo)
         bio_form = BioForm(instance=userinfo)
+        post_form = PostForm()
 
 
     return render(request, 'profile.html', {
         "userinfo": userinfo,
-        'form': bio_form,
+        'bio_form': bio_form,
         'img_form':img_form, 
+        'posts':posts, 
+        'post_form':post_form,
     })
