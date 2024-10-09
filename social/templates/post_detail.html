@@ -144,18 +144,54 @@
 
           <!-- Actions -->
           <div class="d-flex justify-content-between">
-            <button class="btn btn-outline-light btn-sm">
-              <i class="far fa-heart"></i> 23
+            <!-- Love Button -->
+            <button id="love-btn" class="btn btn-outline-light btn-sm" onclick="toggleLove({{ post.id }})">
+                <i id="love-icon" class="{% if request.user.id in users_who_loved %}fas{% else %}far{% endif %} fa-heart"></i>
+                <span id="love-count">{{ post.reactions.count }}</span>
             </button>
+        
+            <!-- Comments Button -->
             <button class="btn btn-outline-light btn-sm">
-              <i class="far fa-comment"></i> {{ total_comments_replis }}
+                <i class="far fa-comment"></i> {{ total_comments_replis }}
             </button>
+        
+            <!-- Retweet Button -->
             <button class="btn btn-outline-light btn-sm">
-              <i class="fas fa-retweet"></i> 8
+                <i class="fas fa-retweet"></i> 8
             </button>
-          </div>
         </div>
-
+        
+        
+        <script>
+            function toggleLove(postId) {
+                fetch(`/post/${postId}/react/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}', 
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                   
+                    const loveIcon = document.getElementById('love-icon');
+                    const loveCount = document.getElementById('love-count');
+        
+                    
+                    if (data.loved) {
+                        loveIcon.classList.remove('far');
+                        loveIcon.classList.add('fas');
+                    } else {
+                        loveIcon.classList.remove('fas');
+                        loveIcon.classList.add('far');
+                    }
+        
+                    loveCount.textContent = data.reactions_count;
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        </script>
+        
         <script>
           function toggleEditForm(postId) {
             const postBody = document.getElementById(`post-body-${postId}`);

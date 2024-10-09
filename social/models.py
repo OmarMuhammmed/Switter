@@ -39,3 +39,14 @@ class ReplyComment(models.Model):
 
     def is_child(self):
         return self.parent is not None    
+    
+
+class Reaction(models.Model):
+    post = models.ForeignKey(Post, related_name='reactions', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('post', 'user')  
+    def __str__(self):
+        return f"{self.user.username} loved {self.post.body[:30]}"    

@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from accounts.models import CustomUser as User , Profile
 from django.views import View
-from .models import Post, Comment, ReplyComment
+from .models import Post, Comment, ReplyComment, Reaction
 from django.contrib.auth.decorators import login_required
 from .forms import PostForm, CommentForm, ReplyCommentForm
 from accounts.forms import BioForm, ImageForm
@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from django.utils import timezone
+from django.http import JsonResponse
 
 class HomeView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
@@ -28,7 +29,6 @@ class HomeView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         # add post 
         form = PostForm(request.POST, request.FILES)
-        print(request.POST,request.FILES)
         if form.is_valid():
             new_post = form.save(commit=False)
             new_post.user = request.user 
@@ -49,7 +49,7 @@ def post_detail(request, pk,*args, **kwargs):
     comment_form = CommentForm()
     reply_form = ReplyCommentForm()
     userinfo = Profile.objects.get(user=request.user)
-
+    users_who_loved = post.reactions.values_list('user', flat=True)
     return render(request, 'post_detail.html', {
         'post': post,
         'comment': comment_form,
@@ -59,6 +59,7 @@ def post_detail(request, pk,*args, **kwargs):
         'update_post_form':update_post_form,
         'total_comments_replis' : total_comments_replis,
         'userinfo' : userinfo,
+        'users_who_loved':users_who_loved
     })
 
 @login_required
@@ -150,7 +151,6 @@ def delete_comment(request, pk, comment_id):
 @login_required
 def add_reply(request, pk):
     if request.method == "POST":
-        print("POST data:", request.POST)  
 
         post = get_object_or_404(Post, pk=pk)
         reply_form = ReplyCommentForm(request.POST)
@@ -162,7 +162,7 @@ def add_reply(request, pk):
 
         if reply_form.is_valid():
             parent_comment_id = request.POST.get('comment_id')
-            print("Comment ID:", parent_comment_id)  
+           
             parent_comment = get_object_or_404(Comment, pk=parent_comment_id)
             
             add_reply = reply_form.save(commit=False)
@@ -188,6 +188,23 @@ def add_reply(request, pk):
         'reply_form': reply_form,
     })
 
+@login_required
+def manage_reatcions(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+
+    reaction = Reaction.objects.filter(post=post, user=request.user).first()
+
+    if reaction:
+        reaction.delete()
+        loved = False
+    else:
+        Reaction.objects.create(post=post, user=request.user)
+        loved = True
+       
+    return JsonResponse({
+    'loved': loved,
+    'reactions_count': post.reactions.count()
+})
 @login_required
 def profile(request, slug):
     
