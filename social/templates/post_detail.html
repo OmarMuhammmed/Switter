@@ -123,9 +123,12 @@
               {% endif %}
               <!-- Edit Form (hidden by default) -->
               <div id="edit-form-{{ post.pk }}" style="display: none">
-                <form method="POST" action="{% url 'post_update' post.pk %}">
+                <form method="POST" action="{% url 'post_update' post.pk %}" enctype="multipart/form-data">
                   {% csrf_token %} 
-                  {{ update_post_form.body }}
+                  {{ update_post_form.body}}
+                 <br>
+                  {{ update_post_form.image}}
+                 
                   <button
                     type="submit"
                     class="btn btn-outline-primary btn-sm mt-2">

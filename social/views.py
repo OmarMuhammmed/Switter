@@ -82,11 +82,11 @@ def post_update(request, pk):
     post = get_object_or_404(Post, pk=pk)
     
     if request.method == 'POST':
-        update_post_form = PostForm(request.POST, instance=post)
+        update_post_form = PostForm(request.POST,request.FILES ,instance=post)
         
         if post.user == request.user :
             if update_post_form.is_valid():
-                print('$'*200)
+               
                 update_post = update_post_form.save(commit=False)
                 update_post.user = request.user
                 created_at = timezone.now()
@@ -95,7 +95,7 @@ def post_update(request, pk):
                 messages.success(request, 'Your Post was Updated successfully..')
                 return redirect('post_detail', pk=pk)
             else :
-                update_post_form = PostForm(instance=post)
+                update_post_form = PostForm(request.FILES ,instance=post)
         else :
             messages.error(request, 'Your Denied to Edit  this Post ! ')
             return redirect('post_detail', pk=pk)          
