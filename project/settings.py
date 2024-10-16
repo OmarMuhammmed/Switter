@@ -139,7 +139,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login'  #
+ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login' 
 ACCOUNT_ADAPTER = 'accounts.adapters.MyAccountAdapter'
 ACCOUNT_FORMS = {
     'signup': 'accounts.forms.CustomSignupForm', 

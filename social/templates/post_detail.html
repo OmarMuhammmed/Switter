@@ -150,7 +150,7 @@
             <!-- Love Button -->
             <button id="love-btn" class="btn btn-outline-light btn-sm" onclick="toggleLove({{ post.id }})">
                 <i id="love-icon" class="{% if request.user.id in users_who_loved %}fas{% else %}far{% endif %} fa-heart"></i>
-                <span id="love-count">{{ post.reactions.count }}</span>
+                <span id="love-count">{{ post.reaction.count }}</span>
             </button>
         
             <!-- Comments Button -->
@@ -304,9 +304,7 @@
                 {{ comment.body }}
               </p>
               <div class="d-flex align-items-center">
-                <button class="btn btn-outline-light btn-sm ms-2">
-                  <i class="far fa-heart"></i> 1
-                </button>
+                
                 <button
                   class="btn btn-sm btn-outline-light"
                   type="button"

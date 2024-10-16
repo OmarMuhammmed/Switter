@@ -1,8 +1,11 @@
-{% extends "base.html" %} {% block content %} {% load django_bootstrap5 %}
+{% extends "base.html" %} 
+{% block content %} 
+{% load django_bootstrap5 %}
 <div class="container mt-4">
   <div class="row align-items-center">
     <div class="col-md-3 d-flex flex-column align-items-center">
       <div class="col-md-9">
+        
         {% if userinfo.image %}
         <img
           src="{{ userinfo.image.url }}"
@@ -29,6 +32,7 @@
             cursor: pointer;
           " />
         {% endif %}
+        {% if request.user == userinfo.user %}
         <form method="post" enctype="multipart/form-data" id="image-form">
           {% csrf_token %}
           <input
@@ -38,8 +42,9 @@
             style="display: none"
             onchange="document.getElementById('image-form').submit();" />
         </form>
+        {% endif %}
       </div>
-
+      
       <script>
         document
           .getElementById("user-avatar")
@@ -47,7 +52,8 @@
             document.getElementById("image-input").click();
           });
       </script>
-
+      
+      {% if request.user == userinfo.user %}
       <form
         method="post"
         action="{% url 'account_logout' %}"
@@ -57,28 +63,50 @@
           Logout
         </button>
       </form>
+      {% endif %}
     </div>
-
+    
     <div class="col-md-9">
-      <div id="bio-section">
-        <h2 class="mt-3">
-          {{ userinfo.user.first_name }} {{ userinfo.user.last_name }}
-        </h2>
+        <div id="bio-section">
+            <h2 class="mt-3">
+                {{ userinfo.user.first_name }} {{ userinfo.user.last_name }}
+                
+                {% if request.user != userinfo.user %}
+                    {% if not is_following %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit"   name="action" value="follow" class="btn btn-outline-primary btn-sm">Follow</button>
+                        </form>
+                    {% else %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit"  name="action" value="unfollow" class="btn btn-outline-danger btn-sm">Unfollow</button>
+                        </form>
+                    {% endif %}    
+                {% else %}
+                        <input type='hidden'>
+                {% endif %}
+              
 
-        <p>@{{ userinfo.user.username }}</p>
+            </h2>
+            
+            
+            <p >@{{ userinfo.user.username }} </p> 
 
         <p>
-          <span class="me-3"><strong>11</strong> Following</span>
-          <span><strong>29</strong> Followers</span>
+          <span class="me-3"><strong>{{following_count}}</strong> Following</span>
+          <span><strong>{{followers_count}}</strong> Followers</span>
         </p>
-
-        {% if userinfo.bio %}
-        <p id="bio-text">{{userinfo.bio}}</p>
-        {% endif %}
-
+        
+            {% if userinfo.bio %}
+            <p id="bio-text">{{userinfo.bio}}</p>
+            {% endif %}
+            
+        {%if request.user == userinfo.user%}
         <button id="edit-bio-btn" class="btn btn-outline-primary btn-sm">
           Edit Bio
         </button>
+        {% endif %}
 
         <div class="card-body" id="bio-form" style="display: none">
           <form method="post">
@@ -88,7 +116,7 @@
               Change
             </button>
           </form>
-        </div>
+         </div>
       </div>
 
       <script>
@@ -106,7 +134,7 @@
               bioText.style.display = "block";
             }
           });
-      </script>
+        </script>
     </div>
   </div>
 

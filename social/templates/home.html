@@ -31,11 +31,11 @@
           </div>
         </div>
         <!-- Logout Form -->
-        <form method="post" action="{% url 'account_logout' %}">
+        {% comment %} <form method="post" action="{% url 'account_logout' %}">
           {% csrf_token %}
           {{ redirect_field }}
           <button type="submit" class="btn btn-outline-danger w-60 mb-3">Logout</button>
-        </form>
+        </form> {% endcomment %}
       </div>
   
       <!-- Posts Section -->
@@ -99,7 +99,9 @@
               </div>
             </a>
             <div class="d-flex justify-content-between">
-              <button class="btn btn-outline-light btn-sm"><i class="far fa-heart"></i> 23</button>
+                <a href="{% url 'post_detail' post.pk %}" >
+              <button class="btn btn-outline-light btn-sm"><i class="far fa-heart"></i> {{post.count_reactions}}</button>
+                </a>
               <a href="{% url 'post_detail' post.pk %}" class="btn btn-outline-light btn-sm">
                 <i class="far fa-comment"></i> {{post.count_comments}}
               </a>

@@ -76,7 +76,7 @@ class CustomUser(AbstractBaseUser):
        
         return True
 
-    @property
+   
     def is_staff(self):
         
         return self.is_superuser
@@ -89,9 +89,8 @@ class CustomUser(AbstractBaseUser):
 
 class Profile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    # followers
-    # following 
-    image = models.ImageField(upload_to='media/profiles', height_field=None, width_field=None, max_length=None ,blank=True, null=True) 
+    following = models.ManyToManyField('self', related_name='followers', blank=True, symmetrical=False) 
+    image = models.ImageField(upload_to='profiles', height_field=None, width_field=None, max_length=None ,blank=True, null=True) 
     bio = models.TextField(max_length=300)
     slug = models.SlugField(unique=True, blank=True)
 
@@ -106,5 +105,7 @@ class Profile(models.Model):
 @receiver(post_save, sender=CustomUser)    
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        user_profile = Profile.objects.create(user=instance)   
-        user_profile.save()
+        profile = Profile.objects.create(user=instance)
+        profile.slug = slugify(instance.username)
+        profile.save()
+        print(f"Profile created for user: {instance.username} with slug: {profile.slug}")

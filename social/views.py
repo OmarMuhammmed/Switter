@@ -17,13 +17,19 @@ from django.http import JsonResponse
 class HomeView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         userinfo = Profile.objects.get(user=request.user)
-        posts = Post.objects.annotate(count_comments=Count('comment')).order_by('-created_at')
+        posts = Post.objects.annotate(
+            count_comments=Count('comment'), 
+            count_reactions=Count('reaction')  
+        ).order_by('-created_at')
+       
+        
         form = PostForm()
 
         return render(request, 'home.html',{
             "posts":posts,
             "userinfo" : userinfo,
             "form": form ,
+           
         })
     
     def post(self, request, *args, **kwargs):
@@ -49,7 +55,7 @@ def post_detail(request, pk,*args, **kwargs):
     comment_form = CommentForm()
     reply_form = ReplyCommentForm()
     userinfo = Profile.objects.get(user=request.user)
-    users_who_loved = post.reactions.values_list('user', flat=True)
+    users_who_loved = post.reaction.values_list('user', flat=True)
     return render(request, 'post_detail.html', {
         'post': post,
         'comment': comment_form,
@@ -203,41 +209,64 @@ def manage_reatcions(request, pk):
        
     return JsonResponse({
     'loved': loved,
-    'reactions_count': post.reactions.count()
+    'reactions_count': post.reaction.count()
 })
 @login_required
 def profile(request, slug):
-    
-    userinfo = get_object_or_404(Profile, slug=slug)
-    
-    posts = Post.objects.filter(user=userinfo.user)
-       
-    if request.method == 'POST':
-        img_form = ImageForm(request.POST, request.FILES,instance=userinfo )
-        bio_form = BioForm(request.POST, instance=userinfo)
+    user_profile = get_object_or_404(Profile, slug=slug)
+    posts = Post.objects.filter(user=user_profile.user)
+
+    if request.method == 'POST': 
+        img_form = ImageForm(request.POST, request.FILES, instance=user_profile)
+        bio_form = BioForm(request.POST, instance=user_profile)
         post_form = PostForm(request.POST)
+
+        
         if post_form.is_valid():
             new_post = post_form.save(commit=False)
-            new_post.user = request.user 
+            new_post.user = request.user
             new_post.save()
-            messages.success(request,'Your Added Post Successfully..')
-            return redirect('profile',slug=slug)
+            messages.success(request, 'Your Added Post Successfully..')
+            return redirect('profile', slug=slug)
+
         
-        if bio_form.is_valid() :
+        if bio_form.is_valid():
             bio_form.save()
 
+        
         if img_form.is_valid():
             img_form.save()
+
+        # Handle follow, unfollow actions
+        action = request.POST.get('action')
+        if action == 'follow':
+            user_profile.followers.add(request.user.profile)
+            messages.success(request, 'You follow @{}'.format(user_profile.user.username))
+            return redirect('profile', slug=slug)
+
+        elif action == 'unfollow':
+            user_profile.followers.remove(request.user.profile)
+            messages.success(request, 'You Unfollow @{}'.format(user_profile.user.username))
+            return redirect('profile', slug=slug)
+
     else:
-        img_form = ImageForm(instance=userinfo)
-        bio_form = BioForm(instance=userinfo)
+        img_form = ImageForm(instance=user_profile)
+        bio_form = BioForm(instance=user_profile)
         post_form = PostForm()
 
+   
+    is_following = user_profile.followers.filter(user=request.user).exists()
+    followers_count = user_profile.followers.count()
+    following_count = user_profile.following.count()
 
     return render(request, 'profile.html', {
-        "userinfo": userinfo,
+        "userinfo": user_profile,
         'bio_form': bio_form,
-        'img_form':img_form, 
-        'posts':posts, 
-        'post_form':post_form,
+        'img_form': img_form,
+        'posts': posts,
+        'post_form': post_form,
+        'is_following': is_following,
+        'followers_count': followers_count,
+        "following_count" : following_count,
     })
+
