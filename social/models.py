@@ -20,7 +20,7 @@ class Comment(models.Model):
 
     def __str__(self):
         return str(f"{self.user} : {self.body[:30]}")
-    # reaction 
+   
 
 
 class ReplyComment(models.Model):

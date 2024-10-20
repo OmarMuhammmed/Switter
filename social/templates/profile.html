@@ -1,11 +1,8 @@
-{% extends "base.html" %} 
-{% block content %} 
-{% load django_bootstrap5 %}
+{% extends "base.html" %} {% block content %} {% load django_bootstrap5 %}
 <div class="container mt-4">
   <div class="row align-items-center">
     <div class="col-md-3 d-flex flex-column align-items-center">
       <div class="col-md-9">
-        
         {% if userinfo.image %}
         <img
           src="{{ userinfo.image.url }}"
@@ -31,7 +28,7 @@
             border: 4px solid #15202b;
             cursor: pointer;
           " />
-        {% endif %}
+        {% endif %} 
         {% if request.user == userinfo.user %}
         <form method="post" enctype="multipart/form-data" id="image-form">
           {% csrf_token %}
@@ -44,7 +41,7 @@
         </form>
         {% endif %}
       </div>
-      
+
       <script>
         document
           .getElementById("user-avatar")
@@ -52,7 +49,7 @@
             document.getElementById("image-input").click();
           });
       </script>
-      
+
       {% if request.user == userinfo.user %}
       <form
         method="post"
@@ -65,43 +62,132 @@
       </form>
       {% endif %}
     </div>
-    
-    <div class="col-md-9">
-        <div id="bio-section">
-            <h2 class="mt-3">
-                {{ userinfo.user.first_name }} {{ userinfo.user.last_name }}
-                
-                {% if request.user != userinfo.user %}
-                    {% if not is_following %}
-                        <form method="post">
-                            {% csrf_token %}
-                            <button type="submit"   name="action" value="follow" class="btn btn-outline-primary btn-sm">Follow</button>
-                        </form>
-                    {% else %}
-                        <form method="post">
-                            {% csrf_token %}
-                            <button type="submit"  name="action" value="unfollow" class="btn btn-outline-danger btn-sm">Unfollow</button>
-                        </form>
-                    {% endif %}    
-                {% else %}
-                        <input type='hidden'>
-                {% endif %}
-              
 
-            </h2>
-            
-            
-            <p >@{{ userinfo.user.username }} </p> 
+    <div class="col-md-9">
+      <div id="bio-section">
+        <h2 class="mt-3">
+          {{ userinfo.user.first_name }} {{ userinfo.user.last_name }} 
+          {% if request.user != userinfo.user %} 
+          {% if not is_following %}
+          <form method="post">
+            {% csrf_token %}
+            <button
+              type="submit"
+              name="action"
+              value="follow"
+              class="btn btn-outline-primary btn-sm">
+              Follow
+            </button>
+          </form>
+          {% else %}
+          <form method="post">
+            {% csrf_token %}
+            <button
+              type="submit"
+              name="action"
+              value="unfollow"
+              class="btn btn-outline-danger btn-sm">
+              Unfollow
+            </button>
+          </form>
+          {% endif %} 
+          {% else %}
+          <input type="hidden" />
+          {% endif %}
+        </h2>
+        <div
+          class="modal fade"
+          id="following"
+          tabindex="-1"
+          aria-labelledby="exampleModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Following [ {{following_count}} ]</h5>
+                <button
+                  type="button"
+                  class="btn-close btn-close-white"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+              </div>
+              
+              {% for user_follow in following_users  %}
+              <div class="modal-body">
+                <a style="color: white ; text-decoration: none" href="{% url 'profile' user_follow.user.username.lower %}">{{user_follow.user.username}}</a>
+              </div>
+              {% endfor %}
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p>@{{ userinfo.user.username }}</p>
 
         <p>
-          <span class="me-3"><strong>{{following_count}}</strong> Following</span>
-          <span><strong>{{followers_count}}</strong> Followers</span>
+          <span
+            type="button"
+            style="cursor: pointer; background: none; border: none"
+            class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#following"
+            class="me-3"
+            ><strong>{{following_count}}</strong> Following</span
+          >
+        <div
+          class="modal fade"
+          id="followers"
+          tabindex="-1"
+          aria-labelledby="exampleModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Following [ {{following_count}} ]</h5>
+                <button
+                  type="button"
+                  class="btn-close btn-close-white"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+              </div>
+              
+              {% for user_follow in followers_users  %}
+              <div class="modal-body">
+                <a style="color: white ; text-decoration: none" 
+                href="{% url 'profile' user_follow.user.username.lower %}">
+                {{user_follow.user.username}}</a>
+              </div>
+              {% endfor %}
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+          <span
+          type="button"
+          style="cursor: pointer; background: none; border: none"
+          class="btn btn-primary"
+          data-bs-toggle="modal"
+          data-bs-target="#followers"
+          class="me-3"><strong>{{followers_count}}</strong> Followers</span>
         </p>
-        
-            {% if userinfo.bio %}
-            <p id="bio-text">{{userinfo.bio}}</p>
-            {% endif %}
-            
+
+        {% if userinfo.bio %}
+        <p id="bio-text">{{userinfo.bio}}</p>
+        {% endif %} 
         {%if request.user == userinfo.user%}
         <button id="edit-bio-btn" class="btn btn-outline-primary btn-sm">
           Edit Bio
@@ -116,7 +202,7 @@
               Change
             </button>
           </form>
-         </div>
+        </div>
       </div>
 
       <script>
@@ -134,7 +220,7 @@
               bioText.style.display = "block";
             }
           });
-        </script>
+      </script>
     </div>
   </div>
 
@@ -145,7 +231,8 @@
         style="background-color: #192734; border-color: #38444d">
         <div class="card-body">
           <form method="post">
-            {% csrf_token %} {% bootstrap_form post_form %}
+            {% csrf_token %} 
+            {% bootstrap_form post_form %}
             <button type="submit" class="btn btn-primary float-end">
               Post
             </button>
@@ -175,10 +262,10 @@
           <p class="text-end">{{ post.created_at|date:"F j, Y, g:i a" }}</p>
           <div class="d-flex justify-content-between">
             <button class="btn btn-outline-light btn-sm">
-              <i class="far fa-heart"></i> 23
+              <i class="far fa-heart"></i> {{post.reaction.count}}
             </button>
             <button class="btn btn-outline-light btn-sm">
-              <i class="far fa-comment"></i> 12
+              <i class="far fa-comment"></i> {{post.comment.count}}
             </button>
             <button class="btn btn-outline-light btn-sm">
               <i class="fas fa-retweet"></i> 8

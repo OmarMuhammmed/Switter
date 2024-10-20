@@ -24,10 +24,11 @@
                 {% endif %}
               <div>
                 <h5 class="card-title mb-0">{{userinfo.user.first_name}} {{userinfo.user.last_name}}</h5>
-                <small>@{{userinfo.user.username}}</small>
+                
+                <small><a style="color: white ; text-decoration: none" href="{% url 'profile' userinfo.user.username.lower %}">@{{userinfo.user.username}}</a></small>
               </div>
             </div>
-            <p><span class="me-3"><strong>32</strong> Following</span> <span><strong>11</strong> Followers</span></p>
+            <p><span class="me-3"><strong>{{following_count}}</strong> Following</span> <span><strong>{{followers_count}}</strong> Followers</span></p>
           </div>
         </div>
         <!-- Logout Form -->

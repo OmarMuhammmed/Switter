@@ -21,7 +21,9 @@ class HomeView(LoginRequiredMixin, View):
             count_comments=Count('comment'), 
             count_reactions=Count('reaction')  
         ).order_by('-created_at')
-       
+        user_profile = request.user.profile
+        followers_count = user_profile.followers.count()
+        following_count = user_profile.following.count()
         
         form = PostForm()
 
@@ -29,7 +31,9 @@ class HomeView(LoginRequiredMixin, View):
             "posts":posts,
             "userinfo" : userinfo,
             "form": form ,
-           
+            "followers_count":followers_count,
+            "following_count":following_count,
+
         })
     
     def post(self, request, *args, **kwargs):
@@ -211,6 +215,7 @@ def manage_reatcions(request, pk):
     'loved': loved,
     'reactions_count': post.reaction.count()
 })
+
 @login_required
 def profile(request, slug):
     user_profile = get_object_or_404(Profile, slug=slug)
@@ -221,7 +226,6 @@ def profile(request, slug):
         bio_form = BioForm(request.POST, instance=user_profile)
         post_form = PostForm(request.POST)
 
-        
         if post_form.is_valid():
             new_post = post_form.save(commit=False)
             new_post.user = request.user
@@ -229,10 +233,8 @@ def profile(request, slug):
             messages.success(request, 'Your Added Post Successfully..')
             return redirect('profile', slug=slug)
 
-        
         if bio_form.is_valid():
             bio_form.save()
-
         
         if img_form.is_valid():
             img_form.save()
@@ -258,6 +260,8 @@ def profile(request, slug):
     is_following = user_profile.followers.filter(user=request.user).exists()
     followers_count = user_profile.followers.count()
     following_count = user_profile.following.count()
+    following_users = user_profile.following.all()
+    followers_users = user_profile.followers.all()
 
     return render(request, 'profile.html', {
         "userinfo": user_profile,
@@ -268,5 +272,7 @@ def profile(request, slug):
         'is_following': is_following,
         'followers_count': followers_count,
         "following_count" : following_count,
+        "following_users": following_users,
+        "followers_users":followers_users, 
     })
 
