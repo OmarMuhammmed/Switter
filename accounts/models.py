@@ -13,7 +13,7 @@ class CustomUserManager(BaseUserManager):
        
         user = self.model(
                             email = self.normalize_email(email),
-                            username = username,
+                            username = username.lower(),
                             first_name = first_name,
                             last_name = last_name,
                             **extra_fields 
@@ -61,7 +61,7 @@ class CustomUser(AbstractBaseUser):
     is_active = models.BooleanField(default=True, null=True, blank=True)
     
     USERNAME_FIELD = 'username' # to login django dash 
-
+    
     objects = CustomUserManager()
     
     class Meta:
@@ -85,6 +85,9 @@ class CustomUser(AbstractBaseUser):
     def __str__(self):
         return self.username
     
+    def save(self, *args, **kwargs):
+        self.username = self.username.lower()  
+        super().save(*args, **kwargs)
 
 
 class Profile(models.Model):
