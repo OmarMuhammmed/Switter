@@ -1,151 +1,228 @@
-{% extends "base.html" %}
-{% block content %}
+{% extends "base.html" %} 
+{% block content %} 
 {% load django_bootstrap5 %}
 <div class="container mt-4">
-    <div class="row">
-      <!-- User Profile Section -->
-      <div class="col-md-3">
-        <div class="card mb-3" style="background-color: #192734; border-color: #38444d;">
-          <div class="card-body">
-            <div class="d-flex align-items-center mb-3">
-                
-                {% if userinfo.image %}
-                <img
-                src="{{ userinfo.image.url }}"
+  <div class="row">
+    <!-- User Profile Section -->
+    <div class="col-md-3">
+      <div
+        class="card mb-3"
+        style="background-color: #192734; border-color: #38444d">
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-3">
+            {% if userinfo.image %}
+            <img
+              src="{{ userinfo.image.url }}"
+              class="rounded-circle me-3"
+              alt="User Avatar"
+              style="width: 64px; height: 64px; border: 2px solid #38444d" />
+            {% else %}
+            <img
+              src="https://via.placeholder.com/48"
+              class="rounded-circle me-3"
+              alt="User Avatar"
+              style="width: 64px; height: 64px; border: 2px solid #38444d" />
+            {% endif %}
+            <div>
+              <h5 class="card-title mb-0">
+                {{userinfo.user.first_name}} {{userinfo.user.last_name}}
+              </h5>
+
+              <small
+                ><a
+                  style="color: white; text-decoration: none"
+                  href="{% url 'profile' userinfo.user.username.lower %}"
+                  >@{{userinfo.user.username}}</a
+                ></small
+              >
+            </div>
+          </div>
+          <p>
+            <span class="me-3"
+              ><strong>{{following_count}}</strong> Following</span
+            >
+            <span><strong>{{followers_count}}</strong> Followers</span>
+          </p>
+        </div>
+      </div>
+      <!-- Logout Form -->
+      {% comment %}
+      <form method="post" action="{% url 'account_logout' %}">
+        {% csrf_token %} {{ redirect_field }}
+        <button type="submit" class="btn btn-outline-danger w-60 mb-3">
+          Logout
+        </button>
+      </form>
+      {% endcomment %}
+    </div>
+
+    <!-- Posts Section -->
+    <div class="col-md-6">
+      <div
+        class="card mb-3"
+        style="background-color: #192734; border-color: #38444d">
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %} {% bootstrap_form form %}
+            <div
+              class="image-upload-container"
+              style="position: relative; display: inline-block">
+              <label
+                for="{{ form.image.id_for_label }}"
+                style="cursor: pointer">
+                <i
+                  class="fas fa-upload"
+                  style="font-size: 24px; color: white"></i>
+              </label>
+              {{ form.image }}
+              <span id="file-name" style="color: white; margin-left: 10px"
+                >No file chosen</span
+              >
+            </div>
+            <button type="submit" class="btn btn-primary float-end">
+              Post
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <script>
+        document
+          .getElementById("{{ form.image.id_for_label }}")
+          .addEventListener("change", function () {
+            var fileName = this.files[0]
+              ? this.files[0].name
+              : "No file chosen";
+            document.getElementById("file-name").textContent = fileName;
+          });
+      </script>
+
+      {% for post in posts %}
+      <div class="card mb-3" style="background-color: #192734; border-color: #38444d; border-radius: 0.5rem;">
+        <div class="card-body">
+          <a href="{% url 'post_detail' post.pk %}" style="text-decoration: none; color: inherit;">
+            <div class="d-flex mb-3 align-items-start">
+             
+              {% if post.user.profile.image %}
+              <img
+                src="{{ post.user.profile.image.url }}"
                 class="rounded-circle me-3"
                 alt="User Avatar"
                 style="width: 64px; height: 64px; border: 2px solid #38444d" />
-                {% else %}
-                <img
+              {% else %}
+              <img
                 src="https://via.placeholder.com/48"
                 class="rounded-circle me-3"
                 alt="User Avatar"
                 style="width: 64px; height: 64px; border: 2px solid #38444d" />
-                {% endif %}
-              <div>
-                <h5 class="card-title mb-0">{{userinfo.user.first_name}} {{userinfo.user.last_name}}</h5>
+              {% endif %}
+    
+              <div style="flex-grow: 1">
+                <h6 class="mb-3 d-flex justify-content-between">
+                  <span>
+                    {{ post.user.first_name }} {{ post.user.last_name }}
+                    <small>@{{ post.user }}</small>
+                  </span>
+                  <small>{{ post.created_at|time:"H:i" }} {{ post.created_at|date }}</small>
+                </h6>
+    
                 
-                <small><a style="color: white ; text-decoration: none" href="{% url 'profile' userinfo.user.username.lower %}">@{{userinfo.user.username}}</a></small>
-              </div>
-            </div>
-            <p><span class="me-3"><strong>{{following_count}}</strong> Following</span> <span><strong>{{followers_count}}</strong> Followers</span></p>
-          </div>
-        </div>
-        <!-- Logout Form -->
-        {% comment %} <form method="post" action="{% url 'account_logout' %}">
-          {% csrf_token %}
-          {{ redirect_field }}
-          <button type="submit" class="btn btn-outline-danger w-60 mb-3">Logout</button>
-        </form> {% endcomment %}
-      </div>
-  
-      <!-- Posts Section -->
-      <div class="col-md-6">
-        <div class="card mb-3" style="background-color: #192734; border-color: #38444d;">
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data" >
-                    {% csrf_token %}
-                    {% bootstrap_form form %}
-                    <div class="image-upload-container" style="position: relative; display: inline-block;">
-                        <label for="{{ form.image.id_for_label }}" style="cursor: pointer;">
-                            <i class="fas fa-upload" style="font-size: 24px; color: white;"></i>
-                        </label>
-                        {{ form.image }}  
-                        <span id="file-name" style="color: white; margin-left: 10px;">No file chosen</span>
+                {% if post.shared_post %}
+                <p class="card-text">
+                    <small>Shared from <a style="color: white ; text-decoration: none" href="{% url 'profile' post.shared_post.user.username.lower %}">@{{ post.shared_post.user.username }}</small></a>
+                  </p>
+                <a href="{% url 'post_detail' post.pk %}" style="text-decoration: none; color: inherit;">
+                <div class="card mb-3" style="background-color: #192734; border-radius: 0.5rem;">
+                  <div class="card-body">
+                    <p class="card-text">{{ post.shared_post.body }}</p>
+                   
+                    {% if post.shared_post.image %}
+                    <div style="max-width: 100%; height: auto;">
+                      <img
+                        src="{{ post.shared_post.image.url }}"
+                        class="img-fluid rounded mb-3"
+                        alt="Shared post image"
+                        style="max-width: 100%; height: auto; border-radius: 0.5rem;" />
                     </div>
-                    <button type="submit" class="btn btn-primary float-end ">Post</button>
-                </form>
-            </div>
-        </div>
-        
-        <script>
-            document.getElementById('{{ form.image.id_for_label }}').addEventListener('change', function() {
-                var fileName = this.files[0] ? this.files[0].name : 'No file chosen';
-                document.getElementById('file-name').textContent = fileName;
-            });
-        </script>
-        
-  
-        {% for post in posts %}
-        <div class="card mb-3" style="background-color: #192734; border-color: #38444d; border-radius: 0.5rem;">
-          <div class="card-body">
-            <a href="{% url 'post_detail' post.pk %}" style="text-decoration: none; color: inherit;">
-              <div class="d-flex mb-3 align-items-start">
-                {% if userinfo.image %}
-                <img
-                src="https://via.placeholder.com/48"
-                class="rounded-circle me-3"
-                alt="User Avatar"
-                style="width: 64px; height: 64px; border: 2px solid #38444d" />
-                {% else %}
-                <img
-                src="https://via.placeholder.com/48"
-                class="rounded-circle me-3"
-                alt="User Avatar"
-                style="width: 64px; height: 64px; border: 2px solid #38444d" />
-                {% endif %}
-                <div style="flex-grow: 1;">
-                  <h6 class="mb-3 d-flex justify-content-between">
-                    <span>{{ post.user.first_name }} {{ post.user.last_name }} <small>@{{ post.user }}</small></span>
-                    <small>{{ post.created_at|time:"H:i" }} {{ post.created_at|date }}</small>
-                  </h6>
-                  <p class="card-text">{{ post.body }}</p>
-  
-                  {% if post.image %}
-                  <div style="max-width: 100%; height: auto;">
-                    <img src="{{ post.image.url }}" class="img-fluid rounded mb-3" alt="Blog post image" style="max-width: 100%; height: auto; border-radius: 0.5rem;" />
+                    {% endif %}
                   </div>
-                  {% endif %}
                 </div>
+                {% else %}
+                
+                <p class="card-text">{{ post.body }}</p>
+                {% if post.image %}
+                <div style="max-width: 100%; height: auto;">
+                  <img
+                    src="{{ post.image.url }}"
+                    class="img-fluid rounded mb-3"
+                    alt="Blog post image"
+                    style="max-width: 100%; height: auto; border-radius: 0.5rem;" />
+                </div>
+                {% endif %}
+                {% endif %}
               </div>
-            </a>
-            <div class="d-flex justify-content-between">
-                <a href="{% url 'post_detail' post.pk %}" >
-              <button class="btn btn-outline-light btn-sm"><i class="far fa-heart"></i> {{post.count_reactions}}</button>
-                </a>
-              <a href="{% url 'post_detail' post.pk %}" class="btn btn-outline-light btn-sm">
-                <i class="far fa-comment"></i> {{post.count_comments}}
-              </a>
-              <button class="btn btn-outline-light btn-sm"><i class="fas fa-retweet"></i> 8</button>
             </div>
+          </a>
+    
+          <!-- التفاعلات مع البوست -->
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'post_detail' post.pk %}">
+              <button class="btn btn-outline-light btn-sm">
+                <i class="far fa-heart"></i> {{post.count_reactions}}
+              </button>
+            </a>
+            <a href="{% url 'post_detail' post.pk %}" class="btn btn-outline-light btn-sm">
+              <i class="far fa-comment"></i> {{post.count_comments}}
+            </a>
+            <button class="btn btn-outline-light btn-sm">
+              <i class="fas fa-retweet"></i> {{count_shares}}
+            </button>
           </div>
         </div>
-        {% endfor %}
       </div>
-  
-      <!-- Who to Follow Section -->
-      <div class="col-md-3">
-        <div class="card mb-3" style="background-color: #192734; border-color: #38444d;">
-          <div class="card-body">
-            <h5 class="card-title">Who to follow</h5>
-            <div class="d-flex align-items-center mb-2">
-              <img
-                src="https://via.placeholder.com/40"
-                class="rounded-circle me-2"
-                alt="User Avatar"
-                style="width: 40px; height: 40px; border: 2px solid #38444d" />
-              <div>
-                <h6 class="mb-0">Tech Innovator</h6>
-                <small>@techinnovator</small>
-              </div>
-              <button class="btn btn-outline-primary btn-sm ms-auto">Follow</button>
+    {% endfor %}
+    
+    </div>
+
+    <!-- Who to Follow Section -->
+    <div class="col-md-3">
+      <div
+        class="card mb-3"
+        style="background-color: #192734; border-color: #38444d">
+        <div class="card-body">
+          <h5 class="card-title">Who to follow</h5>
+          <div class="d-flex align-items-center mb-2">
+            <img
+              src="https://via.placeholder.com/40"
+              class="rounded-circle me-2"
+              alt="User Avatar"
+              style="width: 40px; height: 40px; border: 2px solid #38444d" />
+            <div>
+              <h6 class="mb-0">Tech Innovator</h6>
+              <small>@techinnovator</small>
             </div>
-            <div class="d-flex align-items-center mb-2">
-              <img
-                src="https://via.placeholder.com/40"
-                class="rounded-circle me-2"
-                alt="User Avatar"
-                style="width: 40px; height: 40px; border: 2px solid #38444d" />
-              <div>
-                <h6 class="mb-0">AI Researcher</h6>
-                <small>@airesearcher</small>
-              </div>
-              <button class="btn btn-outline-primary btn-sm ms-auto">Follow</button>
+            <button class="btn btn-outline-primary btn-sm ms-auto">
+              Follow
+            </button>
+          </div>
+          <div class="d-flex align-items-center mb-2">
+            <img
+              src="https://via.placeholder.com/40"
+              class="rounded-circle me-2"
+              alt="User Avatar"
+              style="width: 40px; height: 40px; border: 2px solid #38444d" />
+            <div>
+              <h6 class="mb-0">AI Researcher</h6>
+              <small>@airesearcher</small>
             </div>
+            <button class="btn btn-outline-primary btn-sm ms-auto">
+              Follow
+            </button>
           </div>
         </div>
       </div>
     </div>
   </div>
-  
+</div>
+
 {% endblock content %}

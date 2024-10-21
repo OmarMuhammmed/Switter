@@ -19,7 +19,8 @@ class HomeView(LoginRequiredMixin, View):
         userinfo = Profile.objects.get(user=request.user)
         posts = Post.objects.annotate(
             count_comments=Count('comment'), 
-            count_reactions=Count('reaction')  
+            count_reactions=Count('reaction'),
+            count_shares=Count('shares')  
         ).order_by('-created_at')
         user_profile = request.user.profile
         followers_count = user_profile.followers.count()
@@ -33,6 +34,7 @@ class HomeView(LoginRequiredMixin, View):
             "form": form ,
             "followers_count":followers_count,
             "following_count":following_count,
+            
 
         })
     
@@ -55,11 +57,18 @@ def post_detail(request, pk,*args, **kwargs):
     count_comments = comments.count()
     replis = ReplyComment.objects.filter(post=post).count()
     total_comments_replis = count_comments + replis
+
     update_post_form = PostForm(instance=post)
     comment_form = CommentForm()
     reply_form = ReplyCommentForm()
+
     userinfo = Profile.objects.get(user=request.user)
     users_who_loved = post.reaction.values_list('user', flat=True)
+
+    user_profile = request.user.profile
+    followers_count = user_profile.followers.count()
+    following_count = user_profile.following.count()
+
     return render(request, 'post_detail.html', {
         'post': post,
         'comment': comment_form,
@@ -69,7 +78,10 @@ def post_detail(request, pk,*args, **kwargs):
         'update_post_form':update_post_form,
         'total_comments_replis' : total_comments_replis,
         'userinfo' : userinfo,
-        'users_who_loved':users_who_loved
+        'users_who_loved':users_who_loved,
+        'followers_count' : followers_count, 
+        'following_count' :following_count,
+
     })
 
 @login_required
@@ -276,3 +288,15 @@ def profile(request, slug):
         "followers_users":followers_users, 
     })
 
+
+def share_post(request, pk):
+    original_post = get_object_or_404(Post, pk=pk)
+    shared_post = Post.objects.create(
+        user=request.user, 
+        shared_post=original_post,
+        body=original_post.body,  
+        image=original_post.image  
+    )
+    original_post.share_count += 1
+    original_post.save()
+    return redirect('home')
