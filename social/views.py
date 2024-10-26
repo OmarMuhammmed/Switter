@@ -22,6 +22,7 @@ class HomeView(LoginRequiredMixin, View):
             count_reactions=Count('reaction'),
             count_shares=Count('shares')  
         ).order_by('-created_at')
+        
         user_profile = request.user.profile
         followers_count = user_profile.followers.count()
         following_count = user_profile.following.count()
@@ -51,7 +52,7 @@ class HomeView(LoginRequiredMixin, View):
         return render(request, 'home.html',{"form":form})
 
 @login_required
-def post_detail(request, pk,*args, **kwargs):
+def post_detail(request, pk, slug=None):      
     post = get_object_or_404(Post, pk=pk)
     comments = Comment.objects.filter(post=post).order_by('-created_at')
     count_comments = comments.count()
@@ -81,7 +82,6 @@ def post_detail(request, pk,*args, **kwargs):
         'users_who_loved':users_who_loved,
         'followers_count' : followers_count, 
         'following_count' :following_count,
-
     })
 
 @login_required
@@ -231,7 +231,7 @@ def manage_reatcions(request, pk):
 @login_required
 def profile(request, slug):
     user_profile = get_object_or_404(Profile, slug=slug)
-    posts = Post.objects.filter(user=user_profile.user)
+    posts = Post.objects.filter(user=user_profile.user).order_by('-created_at')
 
     if request.method == 'POST': 
         img_form = ImageForm(request.POST, request.FILES, instance=user_profile)

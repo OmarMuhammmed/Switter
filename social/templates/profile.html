@@ -243,12 +243,14 @@
   </div>
 
   {% for post in posts %}
+  
   <div class="container mt-1 d-flex justify-content-center">
-    <div class="col-md-6">
-      <div
-        class="card mb-3"
-        style="background-color: #192734; border-color: #38444d">
-        <div class="card-body">
+      <div class="col-md-6">
+          <div
+          class="card mb-3"
+          style="background-color: #192734; border-color: #38444d">
+          <div class="card-body">                
+            <a href="{% url 'profile_post_detail' user.profile.slug post.pk %}" style="text-decoration: none; color: inherit;">
           <p class="card-text">{{post.body}}</p>
           {% if post.image %}
           <div style="max-width: 100%; height: auto">
