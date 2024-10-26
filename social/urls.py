@@ -14,7 +14,6 @@ urlpatterns = [
     path('post/<int:pk>/share/',views.share_post, name='share_post'),
     path('accounts/profile/<slug:slug>/',views.profile, name='profile'),
     path('accounts/profile/<slug:slug>/posts/<int:pk>',views.post_detail, name='profile_post_detail'),
-
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

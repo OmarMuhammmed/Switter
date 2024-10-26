@@ -23,11 +23,31 @@ class HomeView(LoginRequiredMixin, View):
             count_shares=Count('shares')  
         ).order_by('-created_at')
         
-        user_profile = request.user.profile
-        followers_count = user_profile.followers.count()
-        following_count = user_profile.following.count()
-        
+        current_user_profile = request.user.profile
+        followers_count = current_user_profile.followers.count()
+        following_count = current_user_profile.following.count()
+
         form = PostForm()
+
+        # recommendation system 
+        
+        current_user_followers = current_user_profile.followers.all()
+        current_user_following = current_user_profile.following.all()
+       
+        recommended_followers_with_repetition = []
+        
+        for follower in current_user_followers:
+            if follower not in current_user_following:
+                recommended_followers_with_repetition.append(follower.user.username)
+        
+        for i_follow in current_user_following:
+            for mutual_follower in i_follow.followers.all():
+                if mutual_follower != request.user and mutual_follower not in current_user_following:
+                    recommended_followers_with_repetition.append(mutual_follower.user.username)
+        
+        recommended_followers = list(set(recommended_followers_with_repetition))            
+        print(recommended_followers)
+
 
         return render(request, 'home.html',{
             "posts":posts,
@@ -35,6 +55,7 @@ class HomeView(LoginRequiredMixin, View):
             "form": form ,
             "followers_count":followers_count,
             "following_count":following_count,
+            "recommended_followers":recommended_followers,
             
 
         })
@@ -48,7 +69,9 @@ class HomeView(LoginRequiredMixin, View):
             new_post.save()
             messages.success(request,'Your Added Post Successfully..')
             return redirect('home')
-            
+
+        
+
         return render(request, 'home.html',{"form":form})
 
 @login_required
@@ -300,3 +323,23 @@ def share_post(request, pk):
     original_post.share_count += 1
     original_post.save()
     return redirect('home')
+
+# def recommend_followers(request):
+    current_user_profile = request.user.profile
+    current_user_followers = current_user_profile.followers.all()
+    current_user_following = current_user_profile.following.all()
+    print(current_user_following)
+    recommended_followers = []
+    
+    for follower in current_user_followers:
+        if follower not in current_user_following:
+            recommended_followers.append(follower.username)
+    
+    for i_follow in current_user_following:
+        for mutual_follower in i_follow.followers.all():
+            if mutual_follower != request.user and mutual_follower not in current_user_following:
+                recommended_followers.append(mutual_follower.username)
+
+    print(recommended_followers)
+
+    return render(request, 'home.html',{'recommended_followers':recommended_followers})
