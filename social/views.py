@@ -17,49 +17,68 @@ from django.http import JsonResponse
 class HomeView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         userinfo = Profile.objects.get(user=request.user)
-        posts = Post.objects.annotate(
-            count_comments=Count('comment'), 
-            count_reactions=Count('reaction'),
-            count_shares=Count('shares')  
-        ).order_by('-created_at')
+        posts = self.get_posts()
+        followers_count, following_count = self.get_follow_counts(request)
+        recommended_followers = self.get_recommended_followers(request)
         
+        form = PostForm()
+ 
+        return render(request, 'home.html', {
+            "posts": posts,
+            "userinfo": userinfo,
+            "form": form,
+            "followers_count": followers_count,
+            "following_count": following_count,
+            "recommended_followers": recommended_followers,
+        })
+
+    def get_follow_counts(self, request):
         current_user_profile = request.user.profile
         followers_count = current_user_profile.followers.count()
         following_count = current_user_profile.following.count()
-
-        form = PostForm()
-
-        # recommendation system 
-        
+        return followers_count, following_count
+    
+    def get_posts(self):
+        return Post.objects.annotate(
+            count_comments=Count('comment'),
+            count_reactions=Count('reaction'),
+            count_shares=Count('shares')
+        ).order_by('-created_at')
+    
+    def get_recommended_followers(self, request):
+        current_user_profile = request.user.profile
         current_user_followers = current_user_profile.followers.all()
         current_user_following = current_user_profile.following.all()
        
         recommended_followers_with_repetition = []
         
         for follower in current_user_followers:
-            if follower not in current_user_following:
-                recommended_followers_with_repetition.append(follower.user.username)
-        
+            if follower != current_user_profile and follower not in current_user_following:
+                recommended_followers_with_repetition.append({
+                    'frist_name': follower.user.first_name,
+                    'last_name': follower.user.last_name,
+                    'username': follower.user.username,
+                   'profile_image_url': follower.image.url if follower.image else None,  
+                    'profile_link': reverse('profile', args=[follower.user.username])
+                })
+
         for i_follow in current_user_following:
             for mutual_follower in i_follow.followers.all():
-                if mutual_follower != request.user and mutual_follower not in current_user_following:
-                    recommended_followers_with_repetition.append(mutual_follower.user.username)
-        
-        recommended_followers = list(set(recommended_followers_with_repetition))            
-        print(recommended_followers)
-
-
-        return render(request, 'home.html',{
-            "posts":posts,
-            "userinfo" : userinfo,
-            "form": form ,
-            "followers_count":followers_count,
-            "following_count":following_count,
-            "recommended_followers":recommended_followers,
+                if mutual_follower != current_user_profile and  mutual_follower not in current_user_following:
+                    recommended_followers_with_repetition.append({
+                        'frist_name': mutual_follower.user.first_name,
+                        'last_name': mutual_follower.user.last_name,
+                        'username': mutual_follower.user.username,
+                        'profile_image_url': mutual_follower.image.url if mutual_follower.image else None,
+                        'profile_link': reverse('profile', args=[mutual_follower.user.username])  
+                })
+                    
+        recommended_followers = [dict(t) 
+                                for t in {tuple(d.items()) 
+                                for d in recommended_followers_with_repetition}
+                                ]
+        return recommended_followers
             
-
-        })
-    
     def post(self, request, *args, **kwargs):
         # add post 
         form = PostForm(request.POST, request.FILES)
@@ -69,10 +88,18 @@ class HomeView(LoginRequiredMixin, View):
             new_post.save()
             messages.success(request,'Your Added Post Successfully..')
             return redirect('home')
-
+        action = request.POST.get('action')
+        if action == 'follow':
+            self.follow_from_recommendation(request)
+            return redirect('home')
         
-
-        return render(request, 'home.html',{"form":form})
+    def follow_from_recommendation(self, request):
+        username_to_follow = request.POST.get('username')  
+        user_profile = Profile.objects.filter(user__username=username_to_follow).first()
+        if user_profile and user_profile != request.user.profile:
+            user_profile.followers.add(request.user.profile)
+            messages.success(request, 'You follow @{}'.format(user_profile.user.username))
+    
 
 @login_required
 def post_detail(request, pk, slug=None):      

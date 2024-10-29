@@ -69,7 +69,7 @@
                 <div>
                   <h6 class="mb-0">
                     {{ post.user.first_name }} {{ post.user.last_name }}
-                    <small> <a style="color: white" href="{% url 'profile' post.user.username.lower %}"> @{{ post.user.username }}</a></small>
+                    <small> <a style="color: #2773d6 ; text-decoration: none" href="{% url 'profile' post.user.username.lower %}"> @{{ post.user.username }}</a></small>
                   </h6>
                   <small
                     >{{ post.created_at|time:"H:i" }} {{post.created_at|date}}</small

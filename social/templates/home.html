@@ -30,7 +30,7 @@
 
               <small
                 ><a
-                  style="color: white; text-decoration: none"
+                  style="color: #2773d6; text-decoration: none"
                   href="{% url 'profile' userinfo.user.username.lower %}"
                   >@{{userinfo.user.username}}</a
                 ></small
@@ -121,7 +121,7 @@
                 <h6 class="mb-3 d-flex justify-content-between">
                   <span>
                     {{ post.user.first_name }} {{ post.user.last_name }}
-                    <small>@{{ post.user }}</small>
+                    <small style="color: #2773d6">@{{ post.user }}</small>
                   </span>
                   <small>{{ post.created_at|time:"H:i" }} {{ post.created_at|date }}</small>
                 </h6>
@@ -129,7 +129,7 @@
                 
                 {% if post.shared_post %}
                 <p class="card-text">
-                    <small>Shared from <a style="color: white ; text-decoration: none" href="{% url 'profile' post.shared_post.user.username.lower %}">@{{ post.shared_post.user.username }}</small></a>
+                    <small>Shared from <a style="color: #2773d6 ; text-decoration: none" href="{% url 'profile' post.shared_post.user.username.lower %}">@{{ post.shared_post.user.username }}</small></a>
                   </p>
                 <a href="{% url 'post_detail' post.pk %}" style="text-decoration: none; color: inherit;">
                 <div class="card mb-3" style="background-color: #192734; border-radius: 0.5rem;">
@@ -186,27 +186,41 @@
 
     <!-- Who to Follow Section -->
     <div class="col-md-3">
-        
       <div
         class="card mb-3"
         style="background-color: #192734; border-color: #38444d">
         <div class="card-body">
+            
           <h5 class="card-title">Who to follow</h5>
-          <div class="d-flex align-items-center mb-2">
+          {% for user in recommended_followers  %}
+          <div class="d-flex align-items-center mb-3 justify-content-between">
+            {% if user.profile_image_url %}
             <img
-              src="https://via.placeholder.com/40"
-              class="rounded-circle me-2"
-              alt="User Avatar"
-              style="width: 40px; height: 40px; border: 2px solid #38444d" />
-            <div>
-            {% for follower_recommended in recommended_followers  %}
-              <h6 class="mb-0">Fristname Lastname </h6>
-              <small>@{{follower_recommended}}</small>
+                src="{{user.profile_image_url}}"
+                class="rounded-circle me-2"
+                alt="User Avatar"
+                style="width: 40px; height: 40px; border: 2px solid #38444d" />
+            {% else %}
+            <img src="https://via.placeholder.com/40"
+                class="rounded-circle me-2"
+                alt="User Avatar"
+                style="width: 40px; height: 40px; border: 2px solid #38444d" />
+            {% endif %}
+                
+            <div class="flex-grow-1">
+                <h6 class="mb-0">{{user.frist_name}} {{user.last_name}}</h6>
+                <a style="color: #2773d6; text-decoration: none" href="{{ user.profile_link.lower }}"><small>@{{user.username}}</small></a>
             </div>
-            <button class="btn btn-outline-primary btn-sm ms-auto">
-              Follow
-            </button>
-          </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="username" value="{{ user.username }}">
+                <button type="submit" name="action" value="follow" class="btn btn-outline-primary btn-sm">
+                    Follow
+                </button>          
+            </form>
+        </div>
+        
          {% endfor %} 
         </div>
       </div>
