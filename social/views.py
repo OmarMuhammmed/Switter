@@ -15,7 +15,7 @@ from django.utils import timezone
 from django.http import JsonResponse
 
 class HomeView(LoginRequiredMixin, View):
-    
+
     def get(self, request, *args, **kwargs):
         userinfo = Profile.objects.get(user=request.user)
         posts = self.get_posts()
@@ -352,22 +352,3 @@ def share_post(request, pk):
     original_post.save()
     return redirect('home')
 
-# def recommend_followers(request):
-    current_user_profile = request.user.profile
-    current_user_followers = current_user_profile.followers.all()
-    current_user_following = current_user_profile.following.all()
-    print(current_user_following)
-    recommended_followers = []
-    
-    for follower in current_user_followers:
-        if follower not in current_user_following:
-            recommended_followers.append(follower.username)
-    
-    for i_follow in current_user_following:
-        for mutual_follower in i_follow.followers.all():
-            if mutual_follower != request.user and mutual_follower not in current_user_following:
-                recommended_followers.append(mutual_follower.username)
-
-    print(recommended_followers)
-
-    return render(request, 'home.html',{'recommended_followers':recommended_followers})
