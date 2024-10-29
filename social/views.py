@@ -15,6 +15,7 @@ from django.utils import timezone
 from django.http import JsonResponse
 
 class HomeView(LoginRequiredMixin, View):
+    
     def get(self, request, *args, **kwargs):
         userinfo = Profile.objects.get(user=request.user)
         posts = self.get_posts()
