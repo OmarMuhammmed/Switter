@@ -51,12 +51,3 @@ class ReplyCommentForm(forms.ModelForm):
             }),
         }
 
-# class ShareForm(forms.Form):
-#     body = forms.CharField(
-#         label='',
-#         widget=forms.Textarea(attrs={
-#             'rows': '3',
-#             'placeholder': 'Say Something...',
-#             'style': 'background-color: #192734; color: white; border: 1px solid #555; padding: 10px; width: 100%; box-sizing: border-box; margin-top:10px ;',  # Dark background and styles
-#     }))
-

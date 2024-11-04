@@ -4,12 +4,17 @@ from django.utils import timezone
 from django.dispatch import receiver
 from django.db.models.signals import post_save 
 from django.utils.text import slugify
+from django.db.models.signals import post_save 
+from allauth.account.signals import email_confirmed
+import secrets
+from django.core.mail import send_mail
+from django.conf import settings
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, first_name, last_name , username, email=None,  password=None,**extra_fields):
         # Vaildation 
-        if not username:
-            raise ValueError('The username field must be set')
+        if not email:
+            raise ValueError('The email field must be set')
        
         user = self.model(
                             email = self.normalize_email(email),
@@ -52,22 +57,23 @@ class CustomUser(AbstractBaseUser):
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     email = models.EmailField(unique=True)
-    username = models.CharField(max_length=50, unique=True)
+    username = models.CharField(max_length=50, unique=True, blank=True)
     date_joined = models.DateTimeField(default=timezone.now)
     last_login = models.DateTimeField(auto_now_add=True)
     is_staff = models.BooleanField(default=False , null=True,blank=True)
     is_admin = models.BooleanField(default=False, null=True, blank=True)
     is_superuser = models.BooleanField(default=False, null=True, blank=True)
     is_active = models.BooleanField(default=True, null=True, blank=True)
-    
-    USERNAME_FIELD = 'username' # to login django dash 
+    USERNAME_FIELD = 'email' 
     
     objects = CustomUserManager()
     
     class Meta:
         verbose_name_plural = 'Users'
 
-    
+    def generate_activation_code(self):
+        self.activation_code = secrets.token_urlsafe(6)
+
     def has_perm(self, perm, obj=None):
        
         return True
@@ -77,18 +83,18 @@ class CustomUser(AbstractBaseUser):
         return True
 
    
+    @property
     def is_staff(self):
-        
-        return self.is_superuser
-    
+        return self.is_admin
+
 
     def __str__(self):
         return self.username
     
     def save(self, *args, **kwargs):
-        self.username = self.username.lower()  
+        if not self.username:
+            self.username = self.email.split('@')[0].lower()  
         super().save(*args, **kwargs)
-
 
 class Profile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
@@ -112,3 +118,12 @@ def create_user_profile(sender, instance, created, **kwargs):
         profile.slug = slugify(instance.username)
         profile.save()
         print(f"Profile created for user: {instance.username} with slug: {profile.slug}")
+
+@receiver(email_confirmed)
+def activate_user_on_email_confirmation(request, email_address, **kwargs):
+    user = email_address.user
+    user.is_active = True
+    user.save()
+    print(f"User {user.email} activated.")
+
+

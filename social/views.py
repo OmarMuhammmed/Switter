@@ -339,7 +339,7 @@ def profile(request, slug):
         "followers_users":followers_users, 
     })
 
-
+@login_required
 def share_post(request, pk):
     original_post = get_object_or_404(Post, pk=pk)
     shared_post = Post.objects.create(

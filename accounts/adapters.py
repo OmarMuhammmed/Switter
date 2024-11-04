@@ -8,6 +8,7 @@ class MyAccountAdapter(DefaultAccountAdapter):
         if not profile.slug:
             return reverse('home') 
         return reverse('profile', kwargs={'slug': profile.slug})
+    
     def get_signup_redirect_url(self, request):
         profile = Profile.objects.get(user=request.user)
         if not profile.slug:
