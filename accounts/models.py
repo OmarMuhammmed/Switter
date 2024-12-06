@@ -7,8 +7,7 @@ from django.utils.text import slugify
 from django.db.models.signals import post_save 
 from allauth.account.signals import email_confirmed
 import secrets
-from django.core.mail import send_mail
-from django.conf import settings
+
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, first_name, last_name , username, email=None,  password=None,**extra_fields):
@@ -29,13 +28,13 @@ class CustomUserManager(BaseUserManager):
 
     
     def create_superuser(self,username, email=None, password=None, **extra_fields):
-        # Set default permissions for superuser
+       
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
         extra_fields.setdefault('is_admin', True)
 
-        # Create the user with the provided parameters
+        
         user = self.create_user(
             first_name='Admin',
             last_name='User',
@@ -117,13 +116,13 @@ def create_user_profile(sender, instance, created, **kwargs):
         profile = Profile.objects.create(user=instance)
         profile.slug = slugify(instance.username)
         profile.save()
-        print(f"Profile created for user: {instance.username} with slug: {profile.slug}")
+        
 
 @receiver(email_confirmed)
 def activate_user_on_email_confirmation(request, email_address, **kwargs):
     user = email_address.user
     user.is_active = True
     user.save()
-    print(f"User {user.email} activated.")
+    
 
 

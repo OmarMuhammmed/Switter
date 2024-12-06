@@ -13,6 +13,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from django.utils import timezone
 from django.http import JsonResponse
+from django.core.cache import cache
 
 class HomeView(LoginRequiredMixin, View):
 
@@ -87,6 +88,16 @@ class HomeView(LoginRequiredMixin, View):
             new_post = form.save(commit=False)
             new_post.user = request.user 
             new_post.save()
+            
+            # Update only profile page cache
+            profile_posts_key = f'user_posts_{request.user.username}'
+            user_posts = Post.objects.filter(user=request.user).annotate(
+                count_comments=Count('comment'),
+                count_reactions=Count('reaction'),
+                count_shares=Count('shares')
+            ).order_by('-created_at')
+            cache.set(profile_posts_key, user_posts, timeout=300)
+            
             messages.success(request,'Your Added Post Successfully..')
             return redirect('home')
         action = request.POST.get('action')
@@ -104,6 +115,9 @@ class HomeView(LoginRequiredMixin, View):
 
 @login_required
 def post_detail(request, pk, slug=None):      
+    # Delete cache first to ensure fresh data
+    cache.delete(f"profile_data_{request.user.profile.slug}")
+    
     post = get_object_or_404(Post, pk=pk)
     comments = Comment.objects.filter(post=post).order_by('-created_at')
     count_comments = comments.count()
@@ -138,16 +152,20 @@ def post_detail(request, pk, slug=None):
 @login_required
 def post_delete(request, pk):
     post = get_object_or_404(Post, pk=pk)
-    if post.user == request.user :
+    if post.user == request.user:
         if request.method == 'POST':
+            # Delete cache for the user's profile
+            cache_key = f"profile_data_{post.user.profile.slug}"
+            cache.delete(cache_key)
+            
+            # Delete the post
             post.delete()
             messages.success(request, 'Your Post was Deleted successfully..')
             return redirect('home')
-    else :
-            messages.error(request, 'Your Denied to  Delete this Post ! ')
-            return redirect('post_detail', pk=pk)            
-        
-        
+    else:
+        messages.error(request, 'Your Denied to Delete this Post!')
+        return redirect('post_detail', pk=pk)            
+    
     return render(request, 'post_detail.html',{'post':post})    
 
 @login_required
@@ -157,28 +175,39 @@ def post_update(request, pk):
     if request.method == 'POST':
         update_post_form = PostForm(request.POST,request.FILES ,instance=post)
         
-        if post.user == request.user :
+        if post.user == request.user:
             if update_post_form.is_valid():
-               
                 update_post = update_post_form.save(commit=False)
                 update_post.user = request.user
                 created_at = timezone.now()
                 update_post.created_at = created_at
                 update_post.save()
+
+                # Delete profile cache first
+                cache.delete(f"profile_data_{post.user.profile.slug}")
+                
+                # Update profile page cache with fresh data
+                profile_posts_key = f'user_posts_{post.user.username}'
+                user_posts = Post.objects.filter(user=post.user).annotate(
+                    count_comments=Count('comment'),
+                    count_reactions=Count('reaction'),
+                    count_shares=Count('shares')
+                ).order_by('-created_at')
+                cache.set(profile_posts_key, user_posts, timeout=300)
+                
                 messages.success(request, 'Your Post was Updated successfully..')
                 return redirect('post_detail', pk=pk)
-            else :
+            else:
                 update_post_form = PostForm(request.FILES ,instance=post)
-        else :
-            messages.error(request, 'Your Denied to Edit  this Post ! ')
+        else:
+            messages.error(request, 'Your Denied to Edit this Post!')
             return redirect('post_detail', pk=pk)          
-            
 
-    return render(request, 'post_detail.html',{
-        'update_post_form':update_post_form,
+    return render(request, 'post_detail.html', {
+        'update_post_form': update_post_form,
         'post': post,
-         })  
- 
+    })
+
 @login_required
 def add_comment(request, pk):
     post = get_object_or_404(Post, pk=pk)
@@ -279,65 +308,119 @@ def manage_reatcions(request, pk):
     'reactions_count': post.reaction.count()
 })
 
-@login_required
-def profile(request, slug):
-    user_profile = get_object_or_404(Profile, slug=slug)
-    posts = Post.objects.filter(user=user_profile.user).order_by('-created_at')
+class ProfileView(LoginRequiredMixin, View):
+    template_name = 'profile.html'
 
-    if request.method == 'POST': 
+    def get(self, request, slug):
+
+        cache_key = f"profile_data_{slug}"
+
+        
+        data = cache.get(cache_key)
+
+        
+        if not data or not isinstance(data, dict) or "userinfo" not in data:
+            user_profile = get_object_or_404(Profile, slug=slug)
+            posts = Post.objects.filter(user=user_profile.user).select_related('user').order_by('-created_at')
+
+            is_following = user_profile.followers.filter(user=request.user).exists()
+            data = {
+                "userinfo": user_profile,
+                'posts': posts,
+                'is_following': is_following,
+                'followers_count': user_profile.followers.count(),
+                "following_count": user_profile.following.count(),
+                "following_users": user_profile.following.all(),
+                "followers_users": user_profile.followers.all(),
+            }
+
+            
+            cache.set(cache_key, data, 900)
+
+            img_form = ImageForm(instance=data["userinfo"])
+            bio_form = BioForm(instance=data["userinfo"])
+            post_form = PostForm()
+
+            data.update({
+            'bio_form': bio_form,
+            'img_form': img_form,
+            'post_form': post_form,
+            })
+            
+            return render(request, self.template_name, data)
+
+        
+        img_form = ImageForm(instance=data["userinfo"])
+        bio_form = BioForm(instance=data["userinfo"])
+        post_form = PostForm()
+
+        data.update({
+            'bio_form': bio_form,
+            'img_form': img_form,
+            'post_form': post_form,
+        })
+
+        return render(request, self.template_name, data)
+
+    def post(self, request, slug):
+        user_profile = get_object_or_404(Profile, slug=slug)
+
         img_form = ImageForm(request.POST, request.FILES, instance=user_profile)
         bio_form = BioForm(request.POST, instance=user_profile)
         post_form = PostForm(request.POST)
 
+        cache_key = f"profile_data_{slug}"
+
+      
         if post_form.is_valid():
             new_post = post_form.save(commit=False)
             new_post.user = request.user
             new_post.save()
-            messages.success(request, 'Your Added Post Successfully..')
+            cache.delete(cache_key)  
+            messages.success(request, 'Your post was added successfully.')
             return redirect('profile', slug=slug)
 
+       
         if bio_form.is_valid():
             bio_form.save()
+            cache.delete(cache_key)  
+
         
         if img_form.is_valid():
             img_form.save()
+            cache.delete(cache_key)  
 
-        # Handle follow, unfollow actions
+       
         action = request.POST.get('action')
         if action == 'follow':
             user_profile.followers.add(request.user.profile)
-            messages.success(request, 'You follow @{}'.format(user_profile.user.username))
+            cache.delete(cache_key)  # Delete target user's cache
+            cache.delete(f"profile_data_{request.user.profile.slug}")  # Delete current user's cache
+            messages.success(request, f'You follow @{user_profile.user.username}')
             return redirect('profile', slug=slug)
 
         elif action == 'unfollow':
             user_profile.followers.remove(request.user.profile)
-            messages.success(request, 'You Unfollow @{}'.format(user_profile.user.username))
+            cache.delete(cache_key)  # Delete target user's cache
+            cache.delete(f"profile_data_{request.user.profile.slug}")  # Delete current user's cache
+            messages.success(request, f'You unfollow @{user_profile.user.username}')
             return redirect('profile', slug=slug)
 
-    else:
-        img_form = ImageForm(instance=user_profile)
-        bio_form = BioForm(instance=user_profile)
-        post_form = PostForm()
 
-   
-    is_following = user_profile.followers.filter(user=request.user).exists()
-    followers_count = user_profile.followers.count()
-    following_count = user_profile.following.count()
-    following_users = user_profile.following.all()
-    followers_users = user_profile.followers.all()
+        return redirect('profile', slug=slug)
 
-    return render(request, 'profile.html', {
-        "userinfo": user_profile,
-        'bio_form': bio_form,
-        'img_form': img_form,
-        'posts': posts,
-        'post_form': post_form,
-        'is_following': is_following,
-        'followers_count': followers_count,
-        "following_count" : following_count,
-        "following_users": following_users,
-        "followers_users":followers_users, 
-    })
+    @staticmethod
+    def update_cache(user_profile, cache_key, is_following):
+        data = {
+            "userinfo": user_profile,
+            'posts': Post.objects.filter(user=user_profile.user).select_related('user').order_by('-created_at'),
+            'is_following': is_following,
+            'followers_count': user_profile.followers.count(),
+            "following_count": user_profile.following.count(),
+            "following_users": user_profile.following.all(),
+            "followers_users": user_profile.followers.all(),
+        }
+        cache.set(cache_key, data, 900)
 
 @login_required
 def share_post(request, pk):
@@ -351,4 +434,3 @@ def share_post(request, pk):
     original_post.share_count += 1
     original_post.save()
     return redirect('home')
-

@@ -7,7 +7,7 @@ class Post(models.Model):
     image = models.ImageField(upload_to='posts', height_field=None, width_field=None, max_length=None , blank=True,null=True)
     body = models.TextField(max_length=5000)
     created_at = models.DateTimeField(default=timezone.now)
-    # share system 
+   
     shared_post = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='shares')
     share_count = models.IntegerField(default=0)
     def __str__(self):
