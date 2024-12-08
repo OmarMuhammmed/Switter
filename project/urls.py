@@ -8,6 +8,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
     path('', include('social.urls')),
+    path('chat/', include('chat.urls')),
 
     
 ] + debug_toolbar_urls()

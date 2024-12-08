@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     # My apps
     'social', 
     'accounts',
+    'chat',
     # libs 
     'debug_toolbar',
     'allauth',
