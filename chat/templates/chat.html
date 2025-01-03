@@ -1,129 +1,44 @@
-{% extends 'base.html' %} 
+{% extends 'base.html' %}
 {% block content %}
+{% load static %}
+<script type="text/javascript">
+    const roomName = "{{ room_name }}";
+    const currentUser = "{{ current_user.username }}";
+    const recipientUser = "{{ recipient.username }}";
+</script>
 
 <body style="background-color: #15202b; color: white">
   <div class="container-fluid" style="height: 100vh">
     <div class="row h-100">
       <!-- Chat List -->
-      <div
-        class="col-md-4 p-0"
-        style="background-color: #192734; border-right: 1px solid #38444d">
+      <div class="col-md-4 p-0" style="background-color: #192734; border-right: 1px solid #38444d">
         <div class="p-3">
           <h4 class="mb-3">Messages</h4>
-          <!-- Chat list items -->
-          <div
-            class="d-flex align-items-center mb-3 p-2"
-            style="
-              background-color: #22303c;
-              border-radius: 10px;
-              cursor: pointer;
-            ">
-            <img
-              src="https://via.placeholder.com/50"
-              class="rounded-circle me-3"
-              alt="User Avatar"
-              style="width: 50px; height: 50px" />
-            <div>
-              <h6 class="mb-0">John Doe</h6>
-              <small style="color: #2773d6">Hey, how are you?</small>
+          {% for user in users %}
+          <a href="{% url 'chat_room' user.id %}" class="text-decoration-none">
+            <div class="d-flex align-items-center mb-3 p-2" style="background-color: #22303c; border-radius: 10px; cursor: pointer;">
+              <img src="https://via.placeholder.com/50" class="rounded-circle me-3" alt="User Avatar" style="width: 50px; height: 50px" />
+              <div>
+                <h6 class="mb-0">{{ user.username }}</h6>
+                <small style="color: #2773d6">Hey, how are you?</small>
+              </div>
             </div>
-          </div>
-          <div
-            class="d-flex align-items-center mb-3 p-2"
-            style="border-radius: 10px; cursor: pointer">
-            <img
-              src="https://via.placeholder.com/50"
-              class="rounded-circle me-3"
-              alt="User Avatar"
-              style="width: 50px; height: 50px" />
-            <div>
-              <h6 class="mb-0">Jane Smith</h6>
-              <small style="color: #2773d6">Check out this photo!</small>
-            </div>
-          </div>
+          </a>
+          {% endfor %}
         </div>
       </div>
 
       <!-- Chat Window -->
       <div class="col-md-8 p-0 d-flex flex-column">
-        <!-- Chat Header -->
-        <div
-          class="p-3 d-flex justify-content-between align-items-center"
-          style="background-color: #22303c">
+        <div class="p-3 d-flex justify-content-between align-items-center" style="background-color: #22303c">
           <div class="d-flex align-items-center">
-            <img
-              src="https://via.placeholder.com/40"
-              class="rounded-circle me-3"
-              alt="User Avatar"
-              style="width: 40px; height: 40px" />
-            <h5 class="mb-0">John Doe</h5>
-          </div>
-          <div>
-            <button
-              class="btn btn-outline-light me-2"
-              style="border-radius: 50%">
-              <i class="fas fa-phone"></i>
-            </button>
-            <button class="btn btn-outline-light" style="border-radius: 50%">
-              <i class="fas fa-video"></i>
-            </button>
+            <img src="https://via.placeholder.com/40" class="rounded-circle me-3" alt="User Avatar" style="width: 40px; height: 40px" />
+            <h5 class="mb-0"> {{ recipient.username }}</h5>
           </div>
         </div>
 
         <!-- Chat Messages -->
-        <div
-          class="flex-grow-1 p-3"
-          style="overflow-y: auto; background-color: #15202b">
-          <!-- Received Message -->
-          <div class="d-flex mb-3">
-            <img
-              src="https://via.placeholder.com/40"
-              class="rounded-circle me-2 align-self-end"
-              alt="User Avatar"
-              style="width: 40px; height: 40px" />
-            <div
-              style="
-                background-color: #22303c;
-                border-radius: 18px;
-                max-width: 70%;
-              ">
-              <p class="mb-0 p-2">Hey, how are you doing?</p>
-            </div>
-          </div>
-
-          <!-- Sent Message -->
-          <div class="d-flex justify-content-end mb-3">
-            <div
-              style="
-                background-color: #1da1f2;
-                border-radius: 18px;
-                max-width: 70%;
-              ">
-              <p class="mb-0 p-2">I'm good, thanks! How about you?</p>
-            </div>
-          </div>
-
-          <!-- Received Image Message -->
-          <div class="d-flex mb-3">
-            <img
-              src="https://via.placeholder.com/40"
-              class="rounded-circle me-2 align-self-end"
-              alt="User Avatar"
-              style="width: 40px; height: 40px" />
-            <div
-              style="
-                background-color: #22303c;
-                border-radius: 18px;
-                max-width: 70%;
-              ">
-              <img
-                src="https://via.placeholder.com/300x200"
-                class="img-fluid rounded-3 mb-1"
-                alt="Shared Image" />
-              <p class="mb-0 p-2">Check out this cool photo!</p>
-            </div>
-          </div>
-        </div>
+        <div class="flex-grow-1 p-3" style="overflow-y: auto; background-color: #15202b" id="messages"></div>
 
         <!-- Message Input -->
         <div class="p-3" style="background-color: #22303c">
@@ -154,4 +69,83 @@
   </div>
 </body>
 
+
+<script>
+    // Initialize WebSocket connection
+    const roomName = "{{ room_name }}";  
+    const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + roomName + '/');
+
+    // Handle incoming messages
+    chatSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    const message = data.message;
+    const sender = data.sender;
+    
+    // Add received message to chat window
+    addMessage(message);
+    };
+
+    // Handle form submission (sending messages)
+    document.getElementById('message-form').onsubmit = function(e) {
+    e.preventDefault();
+    
+    const messageInputDom = document.getElementById('message-input');
+    const message = messageInputDom.value;
+
+    if (message.trim()) {
+        // Send message through WebSocket
+        chatSocket.send(JSON.stringify({
+        'message': message,
+        'sender':"{{ user.username }}"
+        }));
+
+        // Clear the input field
+        messageInputDom.value = '';
+        
+        // Optionally, add the message locally
+        addMessage(message);
+    }
+    };
+
+    // Function to add message to the chat window
+    function addMessage(message, sender) {
+        // نعمل العنصر الأساسي للرسالة
+        const messageElement = document.createElement('div');
+        
+        // نشوف مين اللي بعت الرسالة - هل هو المستخدم الحالي ولا لأ؟
+        const isCurrentUser = sender === currentUser;
+        
+        // نضيف الـ classes الأساسية
+        messageElement.classList.add('d-flex', 'mb-3');
+        
+        // لو المستخدم الحالي هو اللي بعت الرسالة، هنخلي الرسالة تظهر على اليمين
+        if (isCurrentUser) {
+            messageElement.classList.add('justify-content-end');
+            // نعمل الشكل النهائي للرسالة بلون مختلف للمستخدم الحالي
+            messageElement.innerHTML = `
+                <div style="background-color: #1DA1F2; border-radius: 18px; max-width: 70%;">
+                    <p class="mb-0 p-2 text-white">${message}</p>
+                </div>
+            `;
+        } else {
+            // لو حد تاني بعت الرسالة، هتظهر على الشمال مع الصورة
+            messageElement.innerHTML = `
+                <img src="https://via.placeholder.com/40" 
+                    class="rounded-circle me-2 align-self-end" 
+                    alt="${sender}'s Avatar" 
+                    style="width: 40px; height: 40px" />
+                <div style="background-color: #22303c; border-radius: 18px; max-width: 70%;">
+                    <p class="mb-0 p-2">${message}</p>
+                </div>
+            `;
+        }
+
+        // نضيف الرسالة للـ messages container
+        const messagesContainer = document.getElementById('messages');
+        messagesContainer.appendChild(messageElement);
+        
+        // نخلي الـ scroll يروح لآخر رسالة
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+</script>
 {% endblock %}

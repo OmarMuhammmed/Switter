@@ -6,12 +6,15 @@ cryptography==43.0.1
 Django==5.1
 django-allauth==64.2.1
 django-bootstrap5==24.2
+django-debug-toolbar==4.4.6
+django-redis==5.4.0
 idna==3.9
 jwt==1.3.1
 oauthlib==3.2.2
 pillow==10.4.0
 pycparser==2.22
 python-decouple==3.8
+redis==5.2.0
 requests==2.32.3
 requests-oauthlib==2.0.0
 sqlparse==0.5.1

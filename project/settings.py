@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -28,6 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'daphne',               
     'django.contrib.staticfiles',
     # My apps
     'social', 
@@ -76,7 +78,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'project.wsgi.application'
-
+ASGI_APPLICATION = 'project.asgi.application' 
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -88,11 +90,14 @@ DATABASES = {
     }
 }
 
-# simple caching in memory 
+# caching with redis
 CACHES = {
     'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
+        'BACKEND' : 'django_redis.cache.RedisCache',
         'LOCATION': 'redis://127.0.0.1:6379/1',
+        'CONFIG'  : {
+            'hosts': [('127.0.0.1', 6379)],
+        },
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
@@ -135,12 +140,15 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-# Understand your  
+  
 STATIC_URL = 'static/'
+
 # STATICFILES_DIRS = [
-#     BASE_DIR / "static",
+#     os.path.join(BASE_DIR, "static"), 
 # ]
-# STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 MEDIA_URL='/media/'
 MEDIA_ROOT = BASE_DIR /'media'

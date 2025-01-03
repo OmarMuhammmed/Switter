@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% load static %}
+<div class="col-md-4 p-0" style="background-color: #192734; border-right: 1px solid #38444d">
+    <div class="p-3">
+        <h4 class="mb-3">Messages</h4>
+        {% for user in users %}
+        <a href="{% url 'chat_room' user.id %}" class="text-decoration-none">
+            <div class="d-flex align-items-center mb-3 p-2" style="background-color: #22303c; border-radius: 10px; cursor: pointer;">
+                <img src="https://via.placeholder.com/50" class="rounded-circle me-3" alt="User Avatar" style="width: 50px; height: 50px" />
+                <div>
+                    <h6 class="mb-0">{{ user.username }}</h6>
+                    <!-- هنا يمكن إضافة رسالة مبدئية أو إفتراضية -->
+                    <small style="color: #2773d6">
+                        {% if user.last_message %}
+                            {{ user.last_message }} 
+                        {% else %}
+                            Hey, how are you?
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
