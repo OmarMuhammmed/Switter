@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class Conversation(models.Model): # room contains 2 or more users
+    id = models.AutoField(primary_key=True)
     participants = models.ManyToManyField(User, related_name='conversations')
     created_at   =  models.DateTimeField(auto_now_add=True)
 

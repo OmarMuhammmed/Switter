@@ -29,7 +29,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'daphne',               
+    'daphne',
+    'channels',               
     'django.contrib.staticfiles',
     # My apps
     'social', 
@@ -103,6 +104,16 @@ CACHES = {
         },
         'KEY_PREFIX': 'profile_cache'
     }
+}
+
+# channels config
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],  # Redis Server
+        },
+    },
 }
 
 

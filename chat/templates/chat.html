@@ -42,19 +42,21 @@
 
         <!-- Message Input -->
         <div class="p-3" style="background-color: #22303c">
-          <form class="d-flex align-items-center">
+          <form class="d-flex align-items-center" id="message-form">
+            {% csrf_token %}
             <div class="input-group">
               <input
                 type="text"
                 class="form-control"
+                id="message-input"
                 placeholder="Type a message..."
                 style="background-color: #192734; border: none; color: white" />
-              <button
+              {% comment %} <button
                 class="btn btn-outline-light"
                 type="button"
                 style="border-radius: 50%">
                 <i class="fas fa-image"></i>
-              </button>
+              </button> {% endcomment %}
               <button
                 class="btn btn-primary"
                 type="submit"
@@ -72,63 +74,62 @@
 
 <script>
     // Initialize WebSocket connection
-    const roomName = "{{ room_name }}";  
-    const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + roomName + '/');
+    const chatSocket = new WebSocket(
+        'ws://' 
+        + window.location.host 
+        + '/ws/chat/' 
+        + roomName 
+        + '/'
+    );
 
     // Handle incoming messages
     chatSocket.onmessage = function(e) {
-    const data = JSON.parse(e.data);
-    const message = data.message;
-    const sender = data.sender;
-    
-    // Add received message to chat window
-    addMessage(message);
+        const data = JSON.parse(e.data);
+        const message = data.message;
+        const sender = data.sender;
+        
+        // Add received message to chat window
+        addMessage(message, sender);
     };
 
     // Handle form submission (sending messages)
     document.getElementById('message-form').onsubmit = function(e) {
-    e.preventDefault();
-    
-    const messageInputDom = document.getElementById('message-input');
-    const message = messageInputDom.value;
-
-    if (message.trim()) {
-        // Send message through WebSocket
-        chatSocket.send(JSON.stringify({
-        'message': message,
-        'sender':"{{ user.username }}"
-        }));
-
-        // Clear the input field
-        messageInputDom.value = '';
+        e.preventDefault();
         
-        // Optionally, add the message locally
-        addMessage(message);
-    }
+        const messageInputDom = document.getElementById('message-input');
+        const message = messageInputDom.value;
+
+        if (message.trim()) {
+            // Send message through WebSocket
+            chatSocket.send(JSON.stringify({
+            'message': message,
+            'sender':"{{ user.username }}"
+            }));
+
+            // Clear the input field
+            messageInputDom.value = '';
+            
+            // Optionally, add the message locally
+            // addMessage(message);
+        }
     };
 
     // Function to add message to the chat window
     function addMessage(message, sender) {
-        // نعمل العنصر الأساسي للرسالة
+
         const messageElement = document.createElement('div');
-        
-        // نشوف مين اللي بعت الرسالة - هل هو المستخدم الحالي ولا لأ؟
         const isCurrentUser = sender === currentUser;
         
-        // نضيف الـ classes الأساسية
         messageElement.classList.add('d-flex', 'mb-3');
         
-        // لو المستخدم الحالي هو اللي بعت الرسالة، هنخلي الرسالة تظهر على اليمين
         if (isCurrentUser) {
             messageElement.classList.add('justify-content-end');
-            // نعمل الشكل النهائي للرسالة بلون مختلف للمستخدم الحالي
             messageElement.innerHTML = `
                 <div style="background-color: #1DA1F2; border-radius: 18px; max-width: 70%;">
                     <p class="mb-0 p-2 text-white">${message}</p>
                 </div>
             `;
         } else {
-            // لو حد تاني بعت الرسالة، هتظهر على الشمال مع الصورة
             messageElement.innerHTML = `
                 <img src="https://via.placeholder.com/40" 
                     class="rounded-circle me-2 align-self-end" 
@@ -140,11 +141,9 @@
             `;
         }
 
-        // نضيف الرسالة للـ messages container
+        
         const messagesContainer = document.getElementById('messages');
         messagesContainer.appendChild(messageElement);
-        
-        // نخلي الـ scroll يروح لآخر رسالة
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 </script>
