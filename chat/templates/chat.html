@@ -17,8 +17,12 @@
           {% for user in users %}
           <a href="{% url 'chat_room' user.id %}" class="text-decoration-none">
             <div class="d-flex align-items-center mb-3 p-2" style="background-color: #22303c; border-radius: 10px; cursor: pointer;">
-              <img src="https://via.placeholder.com/50" class="rounded-circle me-3" alt="User Avatar" style="width: 50px; height: 50px" />
-              <div>
+                {% if user.profile.image %}
+                <img src="{{ user.profile.image.url }}" class="rounded-circle me-3" alt="User Avatar" style="width: 50px; height: 50px" />
+                {% else %}
+                <img src="{% static 'js/default.png' %}" class="rounded-circle me-3" alt="{{user.username}}" style="width: 50px; height: 50px" />
+                {% endif %}
+               <div>
                 <h6 class="mb-0">{{ user.username }}</h6>
                 <small style="color: #2773d6">Hey, how are you?</small>
               </div>
@@ -32,7 +36,11 @@
       <div class="col-md-8 p-0 d-flex flex-column">
         <div class="p-3 d-flex justify-content-between align-items-center" style="background-color: #22303c">
           <div class="d-flex align-items-center">
-            <img src="https://via.placeholder.com/40" class="rounded-circle me-3" alt="User Avatar" style="width: 40px; height: 40px" />
+            {% if  recipient.profile.image %}
+            <img src="{{ recipient.profile.image.url }}" class="rounded-circle me-3" alt="User Avatar" style="width: 40px; height: 40px" />
+            {% else %}
+            <img src="{% static 'js/default.png' %}" class="rounded-circle me-3" alt="User ??Avatar" style="width: 40px; height: 40px" />
+            {% endif %}
             <h5 class="mb-0"> {{ recipient.username }}</h5>
           </div>
         </div>
@@ -51,12 +59,6 @@
                 id="message-input"
                 placeholder="Type a message..."
                 style="background-color: #192734; border: none; color: white" />
-              {% comment %} <button
-                class="btn btn-outline-light"
-                type="button"
-                style="border-radius: 50%">
-                <i class="fas fa-image"></i>
-              </button> {% endcomment %}
               <button
                 class="btn btn-primary"
                 type="submit"
@@ -131,10 +133,12 @@
             `;
         } else {
             messageElement.innerHTML = `
-                <img src="https://via.placeholder.com/40" 
+                {% if recipient.profile.image.url %}
+                <img src="{{ recipient.profile.image.url }}" 
                     class="rounded-circle me-2 align-self-end" 
                     alt="${sender}'s Avatar" 
                     style="width: 40px; height: 40px" />
+                {% endif %}    
                 <div style="background-color: #22303c; border-radius: 18px; max-width: 70%;">
                     <p class="mb-0 p-2">${message}</p>
                 </div>

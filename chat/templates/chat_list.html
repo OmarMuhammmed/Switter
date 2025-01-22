@@ -8,7 +8,12 @@
         {% for user in users %}
         <a href="{% url 'chat_room' user.id %}" class="text-decoration-none">
             <div class="d-flex align-items-center mb-3 p-2" style="background-color: #22303c; border-radius: 10px; cursor: pointer;">
-                <img src="https://via.placeholder.com/50" class="rounded-circle me-3" alt="User Avatar" style="width: 50px; height: 50px" />
+                
+                {% if user.profile.image %}
+                <img src="{{user.profile.image.url}}" class="rounded-circle me-3" alt="User Avatar" style="width: 50px; height: 50px" />
+                {% else %}   
+                <img src="{% static 'js/default.png' %}" class="rounded-circle me-3" alt="User Avatar" style="width: 50px; height: 50px" />
+                {% endif %}
                 <div>
                     <h6 class="mb-0">{{ user.username }}</h6>
                     <!-- هنا يمكن إضافة رسالة مبدئية أو إفتراضية -->

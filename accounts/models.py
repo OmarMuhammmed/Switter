@@ -102,6 +102,13 @@ class Profile(models.Model):
     bio = models.TextField(max_length=300)
     slug = models.SlugField(unique=True, blank=True)
 
+    @property
+    def profile_pic_url(self):
+        if self.image:
+            return self.image.url
+        else:
+            return '/staticfiles/js/default.png'
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.user.username)
