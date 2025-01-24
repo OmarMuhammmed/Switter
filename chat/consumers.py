@@ -40,15 +40,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         try:
             conversation = await database_sync_to_async(Conversation.objects.get)(id=self.room_id)
         except Conversation.DoesNotExist:
-            conversation = await database_sync_to_async(Conversation.objects.create)(id=self.room_id)
+            conversation = await database_sync_to_async(Conversation.objects.create)()
             await database_sync_to_async(conversation.participants.add)(sender)
         
+      
         # Save the message to the database
         await database_sync_to_async(Message.objects.create)(
             conversation=conversation,
             sender=sender,
             content=message
         )
+        
 
         # Send the message to the group
         await self.channel_layer.group_send(
