@@ -28,8 +28,7 @@ def chat_room(request, user_id):
         
         # Fetch messages for this conversation
         messages = conversation.messages.all().order_by('timestamp')
-        print(f"Conversation: {conversation}")
-        print(f"Messages: {messages}")
+       
     except Conversation.DoesNotExist:
         messages = []
 

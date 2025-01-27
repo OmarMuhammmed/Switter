@@ -95,7 +95,7 @@ DATABASES = {
 CACHES = {
     'default': {
         'BACKEND' : 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'LOCATION': 'redis://redis:6379/1',
         'CONFIG'  : {
             'hosts': [('127.0.0.1', 6379)],
         },
@@ -111,7 +111,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],  # Redis Server
+            "hosts": [('redis', 6379)],  # Redis Server
         },
     },
 }
@@ -154,9 +154,9 @@ USE_TZ = True
   
 STATIC_URL = 'static/'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"), 
-]
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, "static"), 
+# ]
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
