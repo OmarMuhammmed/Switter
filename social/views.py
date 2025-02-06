@@ -241,7 +241,6 @@ def delete_comment(request, pk, comment_id):
     post = get_object_or_404(Post, pk=pk)
     comment = get_object_or_404(Comment, id=comment_id, post=post)
 
-    print('DELETE '*30)
     if request.user == comment.user:
         comment.delete()
         messages.success(request, 'Comment deleted successfully.')
